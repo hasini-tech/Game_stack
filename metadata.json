@@ -1,0 +1,6 @@
+{
+  "name": "Tech Expo SaaS Crush",
+  "description": "A match-3 puzzle game showcasing 7 SaaS products at a tech expo with smooth animations, educational product cards, leaderboards, sound effects, and neon dark aesthetics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
