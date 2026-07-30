@@ -84,22 +84,22 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050508]/85 p-3 backdrop-blur-md sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#f5fff8]/90 p-3 backdrop-blur-md sm:p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="relative flex w-full max-w-lg max-h-[90vh] flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-5 shadow-2xl backdrop-blur-2xl sm:p-6"
+        className="relative flex w-full max-w-lg max-h-[90vh] flex-col overflow-hidden rounded-3xl border border-[#d9e8df] bg-[#f5fff8] p-5 shadow-2xl backdrop-blur-2xl sm:p-6"
       >
         {/* Header */}
-        <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-[#d9e8df] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Trophy className="h-6 w-6 text-amber-400" />
             <div>
-              <h2 className="text-xl font-bold uppercase tracking-tight text-white">
+              <h2 className="text-xl font-bold uppercase tracking-tight text-black">
                 Tech Expo Leaderboard
               </h2>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/50">
                 Top Challengers - Daily Standings
               </p>
             </div>
@@ -107,7 +107,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
 
           <button
             onClick={onClose}
-            className="self-end rounded-full bg-white/10 p-2 text-white/60 transition-colors hover:bg-white/20 hover:text-white sm:self-auto"
+            className="self-end rounded-full border border-[#d9e8df] bg-[#f5fff8] p-2 text-black transition-colors hover:bg-[#e6f8e6] sm:self-auto"
           >
             <X className="h-5 w-5" />
           </button>
@@ -116,7 +116,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
         {/* Entries List */}
         <div className="my-4 flex-1 space-y-2.5 overflow-y-auto pr-1">
           {entries.length === 0 ? (
-            <div className="py-10 text-center text-xs font-bold uppercase tracking-widest text-white/40">
+            <div className="py-10 text-center text-xs font-bold uppercase tracking-widest text-black/50">
               No recorded scores yet. Claim 1st place now!
             </div>
           ) : (
@@ -127,22 +127,22 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
                   idx === 0
                     ? 'border-amber-400/30 bg-amber-400/10'
                     : idx === 1
-                    ? 'border-white/30 bg-white/10'
+                    ? 'border-[#d9e8df] bg-[#f5fff8]'
                     : idx === 2
                     ? 'border-orange-400/30 bg-orange-400/10'
-                    : 'border-white/10 bg-white/5'
+                    : 'border-[#d9e8df] bg-[#f5fff8]'
                 }`}
               >
                 <div className="flex min-w-0 items-start gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 font-mono text-xs font-bold text-white">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#f5fff8] font-mono text-xs font-bold text-black">
                     #{idx + 1}
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-white">
-                      <User className="h-3.5 w-3.5 shrink-0 text-cyan-400" />
+                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-black">
+                      <User className="h-3.5 w-3.5 shrink-0 text-black" />
                       <span className="break-words">{item.playerName}</span>
                     </div>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/50">
+                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-black/50">
                       <span>Combo: x{item.maxCombo}</span>
                       <span>-</span>
                       <span>{item.rank}</span>
@@ -151,10 +151,10 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
                 </div>
 
                 <div className="self-end text-right sm:self-auto">
-                  <div className="font-mono text-sm font-bold text-cyan-400">
+                  <div className="font-mono text-sm font-bold text-black">
                     {item.score.toLocaleString()}
                   </div>
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-white/40">
+                  <div className="text-[9px] font-bold uppercase tracking-widest text-black/50">
                     {item.date}
                   </div>
                 </div>
@@ -165,7 +165,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
 
         {/* Footer */}
         {entries.length > 0 && (
-          <div className="flex justify-center border-t border-white/10 pt-3 sm:justify-end">
+          <div className="flex justify-center border-t border-[#d9e8df] pt-3 sm:justify-end">
             <button
               onClick={handleClear}
               className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-rose-400 opacity-80 transition-opacity hover:text-rose-300 hover:opacity-100"

@@ -44,6 +44,7 @@ export function useGameEngine() {
   const boardRef = useRef<Tile[][]>([]);
   const scoreRef = useRef<number>(0);
   const statusRef = useRef<GameStatus>('landing');
+  const isBusyRef = useRef<boolean>(false);
   const sessionRef = useRef<number>(0);
   const timeoutIdsRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
@@ -67,6 +68,11 @@ export function useGameEngine() {
     statusRef.current = status;
   }, [status]);
 
+  const setBusyState = useCallback((nextBusy: boolean) => {
+    isBusyRef.current = nextBusy;
+    setIsBusy(nextBusy);
+  }, []);
+
   const clearPendingTimeouts = useCallback(() => {
     timeoutIdsRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
     timeoutIdsRef.current.clear();
@@ -75,8 +81,8 @@ export function useGameEngine() {
   const beginFreshSession = useCallback(() => {
     sessionRef.current += 1;
     clearPendingTimeouts();
-    setIsBusy(false);
-  }, [clearPendingTimeouts]);
+    setBusyState(false);
+  }, [clearPendingTimeouts, setBusyState]);
 
   const isSessionActive = useCallback((sessionId: number) => {
     return sessionRef.current === sessionId;
@@ -95,6 +101,19 @@ export function useGameEngine() {
     },
     [isSessionActive]
   );
+
+  const endGame = useCallback(() => {
+    beginFreshSession();
+    setSelectedTile(null);
+    setMatchedTileIds(new Set());
+    setMotivationalMessage(null);
+    setEducationalProductId(null);
+    setStatus('gameover');
+    audioEngine.stopBGM();
+    audioEngine.playGameOver();
+
+    setHighScore((prev) => Math.max(prev, scoreRef.current));
+  }, [beginFreshSession]);
 
   useEffect(() => {
     return () => {
@@ -124,20 +143,7 @@ export function useGameEngine() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [status, mode]);
-
-  const endGame = useCallback(() => {
-    beginFreshSession();
-    setSelectedTile(null);
-    setMatchedTileIds(new Set());
-    setMotivationalMessage(null);
-    setEducationalProductId(null);
-    setStatus('gameover');
-    audioEngine.stopBGM();
-    audioEngine.playGameOver();
-
-    setHighScore((prev) => Math.max(prev, scoreRef.current));
-  }, [beginFreshSession]);
+  }, [status, mode, endGame]);
 
   const startGame = (chosenMode: GameMode = 'timed') => {
     beginFreshSession();
@@ -155,6 +161,7 @@ export function useGameEngine() {
     setMotivationalMessage(null);
 
     const initialBoard = createInitialBoard();
+    boardRef.current = initialBoard;
     setBoard(initialBoard);
     setStatus('playing');
 
@@ -164,8 +171,10 @@ export function useGameEngine() {
   const togglePause = () => {
     if (status === 'playing') {
       setStatus('paused');
+      audioEngine.stopBGM();
     } else if (status === 'paused') {
       setStatus('playing');
+      audioEngine.startBGM();
     }
   };
 
@@ -192,10 +201,10 @@ export function useGameEngine() {
             const shuffled = shuffleBoard(currentBoard);
             setBoard(shuffled);
             setMotivationalMessage(null);
-            setIsBusy(false);
+            setBusyState(false);
           }, 600);
         } else {
-          setIsBusy(false);
+          setBusyState(false);
         }
         return;
       }
@@ -225,6 +234,7 @@ export function useGameEngine() {
       );
       setScore((prev) => {
         const updated = prev + points;
+        scoreRef.current = updated;
         setHighScore((h) => Math.max(h, updated));
         return updated;
       });
@@ -265,8 +275,8 @@ export function useGameEngine() {
         setFloatingScores((prev) => prev.filter((s) => s.id !== scoreId));
       }, 1200);
 
-      // Wait 320ms for explosion animation
-      await new Promise((res) => setTimeout(res, 320));
+      // Keep cascades quick so mobile play feels responsive.
+      await new Promise((res) => setTimeout(res, 240));
       if (!isSessionActive(sessionId)) return;
 
       // Apply Gravity and Refill
@@ -274,23 +284,26 @@ export function useGameEngine() {
         currentBoard,
         matchResult.matchedTileIds
       );
+      boardRef.current = newBoard;
       setBoard(newBoard);
       setMatchedTileIds(new Set());
 
-      // Wait for drop animation
-      await new Promise((res) => setTimeout(res, 280));
+      await new Promise((res) => setTimeout(res, 220));
       if (!isSessionActive(sessionId)) return;
 
       // Continue cascade
       resolveCascades(newBoard, nextCombo, sessionId);
     },
-    [isSessionActive, scheduleSessionTimeout]
+    [isSessionActive, scheduleSessionTimeout, setBusyState]
   );
 
   const handleSwap = useCallback(
     async (r1: number, c1: number, r2: number, c2: number) => {
-      if (isBusy || status !== 'playing') return;
-      setIsBusy(true);
+      if (isBusyRef.current || statusRef.current !== 'playing') return;
+      if (!areAdjacent(r1, c1, r2, c2)) return;
+      if (r1 === r2 && c1 === c2) return;
+
+      setBusyState(true);
       setSelectedTile(null);
 
       audioEngine.playSwap();
@@ -299,6 +312,7 @@ export function useGameEngine() {
       const sessionId = sessionRef.current;
       const originalBoard = boardRef.current;
       const swappedBoard = swapTilesOnBoard(originalBoard, r1, c1, r2, c2);
+      boardRef.current = swappedBoard;
       setBoard(swappedBoard);
 
       // Check if valid match
@@ -307,16 +321,17 @@ export function useGameEngine() {
       if (initialMatches.matchedTileIds.size === 0) {
         // Invalid swap - bounce back after delay
         audioEngine.playInvalid();
-        await new Promise((res) => setTimeout(res, 280));
+        await new Promise((res) => setTimeout(res, 180));
         if (!isSessionActive(sessionId)) return;
+        boardRef.current = originalBoard;
         setBoard(originalBoard); // Revert
-        setIsBusy(false);
+        setBusyState(false);
       } else {
         // Valid swap! Start cascade loop
         resolveCascades(swappedBoard, 0, sessionId);
       }
     },
-    [isBusy, status, resolveCascades, isSessionActive]
+    [resolveCascades, isSessionActive, setBusyState]
   );
 
   const saveScoreToLeaderboard = (playerName: string) => {
@@ -326,7 +341,11 @@ export function useGameEngine() {
       maxCombo,
       totalMatches,
       rank: calculateRankTier(score),
-      date: 'Today',
+      date: new Intl.DateTimeFormat(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }).format(new Date()),
       mode,
     });
   };

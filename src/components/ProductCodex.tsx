@@ -20,22 +20,22 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
   const qrGrid = generateSvgQrPath(activeProduct.qrUrl, 21);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050508]/85 p-3 backdrop-blur-md sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#f5fff8]/90 p-3 backdrop-blur-md sm:p-6">
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative flex h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 shadow-2xl backdrop-blur-2xl sm:h-[90vh] sm:p-6"
+        className="relative flex h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-[#d9e8df] bg-[#f5fff8] p-4 shadow-2xl backdrop-blur-2xl sm:h-[90vh] sm:p-6"
       >
         {/* Header Bar */}
-        <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-[#d9e8df] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Sparkles className="h-6 w-6 animate-pulse text-cyan-400" />
             <div>
-              <h2 className="text-xl font-bold uppercase tracking-tight text-white sm:text-2xl">
+              <h2 className="text-xl font-bold uppercase tracking-tight text-black sm:text-2xl">
                 Tech Expo SaaS Codex
               </h2>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/50">
                 Level 14 - 7 Enterprise Solutions
               </p>
             </div>
@@ -43,7 +43,7 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
 
           <button
             onClick={onClose}
-            className="self-end rounded-full bg-white/10 p-2 text-white/60 transition-colors hover:bg-white/20 hover:text-white sm:self-auto"
+            className="self-end rounded-full border border-[#d9e8df] bg-[#f5fff8] p-2 text-black transition-colors hover:bg-[#e6f8e6] sm:self-auto"
           >
             <X className="h-5 w-5" />
           </button>
@@ -61,20 +61,20 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
                   onClick={() => setSelectedId(prod.id)}
                   className={`flex shrink-0 items-center gap-3 rounded-2xl border p-3 text-left transition-all md:shrink ${
                     isSelected
-                      ? 'border-cyan-400/50 bg-white/10 text-white shadow-lg'
-                      : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
+                      ? 'border-[#1b9e4b] bg-[#1b9e4b] text-black shadow-lg'
+                      : 'border-[#d9e8df] bg-[#f5fff8] text-black hover:bg-[#e6f8e6]'
                   }`}
                 >
                   <SaaSLogo id={prod.id} size={36} glow={isSelected} />
                   <div>
                     <div
                       className={`text-xs font-bold uppercase tracking-wider ${
-                        isSelected ? 'text-white' : 'text-white/80'
+                        isSelected ? 'text-black' : 'text-black'
                       }`}
                     >
                       {prod.name}
                     </div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-cyan-400">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-black/70">
                       {prod.category}
                     </div>
                   </div>
@@ -84,26 +84,26 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
           </div>
 
           {/* Right Product Details Sheet (8 cols) */}
-          <div className="flex min-h-0 flex-col justify-between overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl md:col-span-8 sm:p-6">
+          <div className="flex min-h-0 flex-col justify-between overflow-y-auto rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-4 backdrop-blur-xl md:col-span-8 sm:p-6">
             <div className="space-y-4">
               {/* Product Header */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-2.5">
+                  <div className="rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-2.5">
                     <SaaSLogo id={activeProduct.id} size={48} glow={true} />
                   </div>
                   <div>
                     <span className="mb-1 inline-block rounded-md border border-cyan-400/20 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-cyan-400">
                       {activeProduct.category}
                     </span>
-                    <h3 className="text-2xl font-bold uppercase tracking-tight text-white">
+                    <h3 className="text-2xl font-bold uppercase tracking-tight text-black">
                       {activeProduct.name}
                     </h3>
                   </div>
                 </div>
 
                 <div className="hidden text-right sm:block">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-black/50">
                     KPI Metric
                   </span>
                   <div className="font-mono text-xs font-bold text-cyan-400">
@@ -117,21 +117,21 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
                 <p className="mb-2 text-xs font-bold uppercase tracking-wider italic text-cyan-400">
                   "{activeProduct.tagline}"
                 </p>
-                <p className="rounded-xl border border-white/10 bg-black/30 p-3.5 text-xs leading-relaxed text-white/80 sm:text-sm">
+                <p className="rounded-xl border border-[#d9e8df] bg-[#f5fff8] p-3.5 text-xs leading-relaxed text-black/80 sm:text-sm">
                   {activeProduct.fullDesc}
                 </p>
               </div>
 
               {/* Key Capabilities List */}
               <div className="space-y-2">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-white/50">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-black/50">
                   Enterprise Capabilities
                 </h4>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {activeProduct.features.map((feat, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 p-2 text-xs font-medium text-white/90"
+                      className="flex items-center gap-2 rounded-xl border border-[#d9e8df] bg-[#f5fff8] p-2 text-xs font-medium text-black/90"
                     >
                       <CheckCircle className="h-4 w-4 shrink-0 text-cyan-400" />
                       <span>{feat}</span>
@@ -142,7 +142,7 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
             </div>
 
             {/* Bottom Footer: QR Code & Expo Link */}
-            <div className="mt-6 flex flex-col gap-4 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-6 flex flex-col gap-4 border-t border-[#d9e8df] pt-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <div className="shrink-0 rounded-lg bg-white p-1.5 shadow-md">
                   <svg width={56} height={56} viewBox="0 0 21 21">
@@ -155,7 +155,7 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
                             y={r}
                             width={1}
                             height={1}
-                            fill="#050508"
+                            fill="#000000"
                           />
                         ) : null
                       )
@@ -163,10 +163,10 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
                   </svg>
                 </div>
                 <div>
-                  <div className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-white">
+                  <div className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-black">
                     <QrCode className="h-3.5 w-3.5 text-amber-400" /> Expo Booth QR
                   </div>
-                  <div className="text-[10px] uppercase tracking-widest text-white/50">
+                  <div className="text-[10px] uppercase tracking-widest text-black/50">
                     Scan for sandbox demo
                   </div>
                 </div>
@@ -176,7 +176,7 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
                 href={activeProduct.qrUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-cyan-400 sm:w-auto"
+                className="flex items-center justify-center gap-2 rounded-xl bg-[#1b9e4b] px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-[#17903f] sm:w-auto"
               >
                 <span>Visit Portal</span>
                 <ExternalLink className="h-4 w-4" />

@@ -18,7 +18,7 @@ export const TileComponent: React.FC<TileProps> = ({
   sizePx,
 }) => {
   const product = getProductById(tile.productId);
-  const iconSize = sizePx < 40 ? sizePx * 0.68 : sizePx * 0.58;
+  const iconSize = Math.min(Math.max(24, sizePx * 0.88), sizePx - 6);
 
   return (
     <motion.div
@@ -46,10 +46,10 @@ export const TileComponent: React.FC<TileProps> = ({
       whileTap={isMatched ? undefined : { scale: 0.96 }}
       aria-label={product.name}
       title={product.name}
-      className={`relative cursor-pointer select-none rounded-xl p-1 sm:p-1.5 flex flex-col items-center justify-center transition-all duration-200 will-change-transform ${
+      className={`relative cursor-pointer select-none overflow-hidden rounded-xl p-0.5 flex flex-col items-center justify-center transition-all duration-200 will-change-transform ${
         isSelected
-          ? 'bg-cyan-500/20 border border-cyan-500/50 shadow-[0_0_20px_rgba(6,182,212,0.5)] scale-105 z-20'
-          : 'bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20'
+          ? 'bg-[#1b9e4b]/20 border border-[#1b9e4b] shadow-[0_0_20px_rgba(27,158,75,0.35)] scale-105 z-20'
+          : 'bg-[#f5fff8] hover:bg-[#e6f8e6] border border-[#d9e8df] hover:border-[#1b9e4b]/50'
       }`}
       style={{
         width: sizePx,

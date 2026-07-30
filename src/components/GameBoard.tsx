@@ -28,10 +28,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   isBusy,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const [boardWidthPx, setBoardWidthPx] = useState<number>(360);
   const [tileSizePx, setTileSizePx] = useState<number>(40);
   const [particles, setParticles] = useState<Particle[]>([]);
   const lastParticleMatchKeyRef = useRef<string>('');
+  const gridGapPx = tileSizePx < 34 ? 2 : 3;
+  const boardPaddingPx = tileSizePx < 34 ? 6 : 8;
   const dragStartPosRef = useRef<{
     row: number;
     col: number;
@@ -45,14 +48,18 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   useEffect(() => {
     const updateSize = () => {
       const containerWidth = containerRef.current ? containerRef.current.clientWidth : window.innerWidth;
-      const screenWidth = Math.min(containerWidth, window.innerWidth - 16);
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const screenWidth = Math.max(280, Math.min(containerWidth, window.innerWidth - 12));
+      const isCompact = window.innerWidth < 640;
 
-      const innerPadding = 16; // 8px each side, matching p-2 on the board shell
-      const gapPx = 3;
+      const innerPadding = isCompact ? 12 : 16;
+      const gapPx = isCompact ? 2 : 3;
       const totalGaps = (BOARD_SIZE - 1) * gapPx;
+      const reservedVerticalSpace = isCompact ? 166 : 248;
+      const heightLimitedContent = Math.max(248, viewportHeight - reservedVerticalSpace - innerPadding);
 
-      const maxAllowedContent = Math.min(screenWidth - innerPadding, 480);
-      const minTileSize = window.innerWidth < 360 ? 18 : window.innerWidth < 480 ? 20 : 30;
+      const maxAllowedContent = Math.min(screenWidth - innerPadding, heightLimitedContent, isCompact ? 390 : 520);
+      const minTileSize = window.innerWidth < 340 ? 24 : window.innerWidth < 480 ? 28 : 36;
       const computedTileSize = Math.max(
         minTileSize,
         Math.floor((maxAllowedContent - totalGaps) / BOARD_SIZE)
@@ -73,9 +80,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
     window.addEventListener('resize', updateSize);
     window.addEventListener('orientationchange', updateSize);
+    window.visualViewport?.addEventListener('resize', updateSize);
     return () => {
       window.removeEventListener('resize', updateSize);
       window.removeEventListener('orientationchange', updateSize);
+      window.visualViewport?.removeEventListener('resize', updateSize);
       resizeObserver?.disconnect();
     };
   }, []);
@@ -100,8 +109,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           if (board[r]?.[c]?.id === id) {
             const pId = board[r][c].productId;
             const product = getProductById(pId);
-            const centerX = c * (tileSizePx + 3) + tileSizePx / 2 + 8;
-            const centerY = r * (tileSizePx + 3) + tileSizePx / 2 + 8;
+            const centerX = c * (tileSizePx + gridGapPx) + tileSizePx / 2 + boardPaddingPx;
+            const centerY = r * (tileSizePx + gridGapPx) + tileSizePx / 2 + boardPaddingPx;
 
             for (let i = 0; i < 7; i++) {
               const angle = Math.random() * Math.PI * 2;
@@ -140,17 +149,39 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
   };
 
-  const handlePointerDown = (
-    r: number,
-    c: number,
-    e: React.PointerEvent<HTMLDivElement>
-  ) => {
+  const getTilePositionFromPointer = (clientX: number, clientY: number) => {
+    const gridRect = gridRef.current?.getBoundingClientRect();
+    if (!gridRect) return null;
+
+    const localX = clientX - gridRect.left;
+    const localY = clientY - gridRect.top;
+    const tileStride = tileSizePx + gridGapPx;
+
+    if (localX < 0 || localY < 0) return null;
+
+    const col = Math.floor(localX / tileStride);
+    const row = Math.floor(localY / tileStride);
+    const xInsideCell = localX - col * tileStride;
+    const yInsideCell = localY - row * tileStride;
+
+    if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return null;
+    if (xInsideCell > tileSizePx || yInsideCell > tileSizePx) return null;
+
+    return { row, col };
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isBusy) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
 
+    const tilePos = getTilePositionFromPointer(e.clientX, e.clientY);
+    if (!tilePos) return;
+
+    gridRef.current?.focus();
+
     dragStartPosRef.current = {
-      row: r,
-      col: c,
+      row: tilePos.row,
+      col: tilePos.col,
       x: e.clientX,
       y: e.clientY,
       handled: false,
@@ -167,9 +198,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
     const dx = e.clientX - dragStartPosRef.current.x;
     const dy = e.clientY - dragStartPosRef.current.y;
-    const minSwipeDist = 14;
+    const minSwipeDist = Math.max(10, Math.min(18, tileSizePx * 0.32));
 
     if (Math.abs(dx) > minSwipeDist || Math.abs(dy) > minSwipeDist) {
+      e.preventDefault();
       dragStartPosRef.current.handled = true;
       const { row, col } = dragStartPosRef.current;
 
@@ -190,6 +222,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       ) {
         onSwap(row, col, targetR, targetC);
       }
+
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        // Pointer capture may already be released on some mobile browsers.
+      }
     }
   };
 
@@ -199,16 +237,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
   };
 
-  const handlePointerUp = (
-    r: number,
-    c: number,
-    e: React.PointerEvent<HTMLDivElement>
-  ) => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragStartPosRef.current) return;
     if (dragStartPosRef.current.pointerId !== e.pointerId) return;
 
     if (!dragStartPosRef.current.handled && !isBusy) {
-      handleTileClick(r, c);
+      handleTileClick(dragStartPosRef.current.row, dragStartPosRef.current.col);
     }
 
     clearPointerState(e.pointerId);
@@ -230,10 +264,44 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isBusy || !selectedTile) return;
+
+    const keyToDelta: Record<string, { row: number; col: number }> = {
+      ArrowUp: { row: -1, col: 0 },
+      ArrowDown: { row: 1, col: 0 },
+      ArrowLeft: { row: 0, col: -1 },
+      ArrowRight: { row: 0, col: 1 },
+    };
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onSelectTile(-1, -1);
+      return;
+    }
+
+    const delta = keyToDelta[e.key];
+    if (!delta) return;
+
+    const targetR = selectedTile.row + delta.row;
+    const targetC = selectedTile.col + delta.col;
+    if (
+      targetR < 0 ||
+      targetR >= BOARD_SIZE ||
+      targetC < 0 ||
+      targetC >= BOARD_SIZE
+    ) {
+      return;
+    }
+
+    e.preventDefault();
+    onSwap(selectedTile.row, selectedTile.col, targetR, targetC);
+  };
+
   return (
     <div
       ref={containerRef}
-      className="relative flex flex-col items-center justify-center w-full max-w-lg mx-auto select-none touch-none"
+      className="relative flex w-full max-w-lg flex-col items-center justify-center mx-auto select-none touch-none"
     >
       {/* Motivational Toast Banner */}
       <AnimatePresence>
@@ -242,7 +310,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             initial={{ opacity: 0, y: -20, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.9 }}
-            className="absolute -top-10 z-40 bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 text-white font-bold text-xs sm:text-sm uppercase tracking-wider px-4 py-1 rounded-full shadow-lg border border-white/20 pointer-events-none"
+            className="absolute -top-10 z-40 bg-[#1b9e4b] text-black font-bold text-xs sm:text-sm uppercase tracking-wider px-4 py-1 rounded-full shadow-lg border border-[#d9e8df] pointer-events-none"
           >
             {motivationalMessage}
           </motion.div>
@@ -251,10 +319,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
       {/* Main Glass Game Board Canvas Container */}
       <div
-        className="relative rounded-3xl bg-white/5 p-2 shadow-2xl border border-white/10 backdrop-blur-md overflow-hidden touch-none"
+        className="relative rounded-2xl bg-[#f5fff8] p-2 shadow-xl border border-[#d9e8df] backdrop-blur-md overflow-hidden touch-none sm:rounded-3xl sm:shadow-2xl"
         style={{
           width: boardWidthPx,
           height: boardWidthPx,
+          padding: boardPaddingPx,
+          boxSizing: 'border-box',
         }}
       >
         {/* Particle Canvas Overlay */}
@@ -268,8 +338,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         <div className="absolute inset-0 pointer-events-none z-30">
           <AnimatePresence>
             {floatingScores.map((scoreItem) => {
-              const x = scoreItem.col * (tileSizePx + 3) + tileSizePx / 2 + 8;
-              const y = scoreItem.row * (tileSizePx + 3) + tileSizePx / 2 + 8;
+              const x = scoreItem.col * (tileSizePx + gridGapPx) + tileSizePx / 2 + boardPaddingPx;
+              const y = scoreItem.row * (tileSizePx + gridGapPx) + tileSizePx / 2 + boardPaddingPx;
               return (
                 <motion.div
                   key={scoreItem.id}
@@ -296,11 +366,22 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
         {/* 8x8 Grid Tiles */}
         <div
-          className="grid grid-cols-8 gap-[3px] h-full w-full justify-center items-center touch-none"
+          ref={gridRef}
+          className="grid grid-cols-8 h-full w-full justify-center items-center touch-none"
           style={{
             gridTemplateColumns: `repeat(${BOARD_SIZE}, ${tileSizePx}px)`,
             gridTemplateRows: `repeat(${BOARD_SIZE}, ${tileSizePx}px)`,
+            gap: gridGapPx,
           }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
+          onKeyDown={handleKeyDown}
+          onContextMenu={(e) => e.preventDefault()}
+          tabIndex={0}
+          role="grid"
+          aria-label="Match three game board"
         >
           {board.map((rowArr, r) =>
             rowArr.map((tile, c) => {
@@ -313,11 +394,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               return (
                 <div
                   key={tile.id}
-                  onPointerDown={(e) => handlePointerDown(r, c, e)}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={(e) => handlePointerUp(r, c, e)}
-                  onPointerCancel={handlePointerCancel}
-                  onContextMenu={(e) => e.preventDefault()}
+                  data-board-row={r}
+                  data-board-col={c}
                   className="flex items-center justify-center touch-none"
                 >
                   <TileComponent

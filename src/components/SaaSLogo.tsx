@@ -10,7 +10,8 @@ const logoImageModules = import.meta.glob('../../assets/image/*.{png,jpg,jpeg,we
 const logoImageFilesByKey: Partial<Record<string, string[]>> = {
   growthlab: ['insta-x-bot.png'],
   ciphergate: ['ciphergate.jpeg'],
-  fynovo: ['billzzy-logo.png'],
+  fynovo: ['Fynlog.png'],
+  devpulse: ['Fynlog.png'],
   cloudsync: ['lite-logo.png'],
   omnidata: ['f3-icon.png'],
   pulsecrm: ['gowhat.png'],
@@ -51,19 +52,24 @@ export const SaaSLogo: React.FC<SaaSLogoProps> = ({
   if (logoImage) {
     return (
       <div
-        className={`relative inline-flex items-center justify-center rounded-xl p-1.5 transition-transform ${className} ${
+        className={`pointer-events-none relative inline-flex items-center justify-center overflow-hidden rounded-xl p-0.5 transition-transform ${className} ${
           glow ? product.color.glow : ''
         }`}
         style={{
           width: size,
           height: size,
+          boxSizing: 'border-box',
         }}
       >
         <img
           src={logoImage}
           alt={product.name}
           draggable={false}
-          className="block h-full w-full select-none object-contain pointer-events-none"
+          className="pointer-events-none block select-none object-contain"
+          style={{
+            maxWidth: product.key === 'fynovo' ? '82%' : '90%',
+            maxHeight: product.key === 'fynovo' ? '82%' : '90%',
+          }}
         />
       </div>
     );
@@ -262,7 +268,7 @@ export const SaaSLogo: React.FC<SaaSLogoProps> = ({
 
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-xl p-1.5 transition-transform ${className}`}
+      className={`pointer-events-none relative inline-flex items-center justify-center rounded-xl p-1.5 transition-transform ${className}`}
       style={{
         width: size,
         height: size,

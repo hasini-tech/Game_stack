@@ -2,11 +2,78 @@ import { Tile, SaaSProductId, SpecialTileType } from '../types/game';
 
 export const BOARD_SIZE = 8;
 export const NUM_PRODUCTS = 7;
+const PRODUCT_IDS: SaaSProductId[] = [0, 1, 2, 3, 4, 5, 6];
 
 let idCounter = 0;
 function generateTileId(): string {
   idCounter++;
   return `tile-${Date.now()}-${idCounter}-${Math.random().toString(36).substr(2, 5)}`;
+}
+
+function isInBounds(row: number, col: number): boolean {
+  return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+}
+
+function pickRandomProduct(excluded: SaaSProductId[] = []): SaaSProductId {
+  const available = PRODUCT_IDS.filter((productId) => !excluded.includes(productId));
+  const pool = available.length > 0 ? available : PRODUCT_IDS;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function createNoMatchBoard(): Tile[][] {
+  const board: Tile[][] = [];
+
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    const row: Tile[] = [];
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      const excluded: SaaSProductId[] = [];
+
+      if (c >= 2 && row[c - 1].productId === row[c - 2].productId) {
+        excluded.push(row[c - 1].productId);
+      }
+
+      if (r >= 2 && board[r - 1][c].productId === board[r - 2][c].productId) {
+        excluded.push(board[r - 1][c].productId);
+      }
+
+      row.push({
+        id: generateTileId(),
+        productId: pickRandomProduct(excluded),
+        row: r,
+        col: c,
+      });
+    }
+    board.push(row);
+  }
+
+  return board;
+}
+
+function createGuaranteedPlayableBoard(): Tile[][] {
+  const board = createNoMatchBoard();
+  const matchProduct = board[0][0].productId;
+  const blockers = PRODUCT_IDS.filter((productId) => productId !== matchProduct);
+
+  board[0][1] = {
+    ...board[0][1],
+    productId: matchProduct,
+    row: 0,
+    col: 1,
+  };
+  board[1][2] = {
+    ...board[1][2],
+    productId: matchProduct,
+    row: 1,
+    col: 2,
+  };
+  board[0][2] = {
+    ...board[0][2],
+    productId: blockers[0],
+    row: 0,
+    col: 2,
+  };
+
+  return board;
 }
 
 /**
@@ -17,46 +84,13 @@ export function createInitialBoard(): Tile[][] {
   let attempts = 0;
 
   do {
-    board = [];
-    for (let r = 0; r < BOARD_SIZE; r++) {
-      const row: Tile[] = [];
-      for (let c = 0; c < BOARD_SIZE; c++) {
-        let validProductIds: SaaSProductId[] = [0, 1, 2, 3, 4, 5, 6];
-
-        // Prevent horizontal match-3
-        if (c >= 2) {
-          const prev1 = row[c - 1].productId;
-          const prev2 = row[c - 2].productId;
-          if (prev1 === prev2) {
-            validProductIds = validProductIds.filter((p) => p !== prev1);
-          }
-        }
-
-        // Prevent vertical match-3
-        if (r >= 2) {
-          const above1 = board[r - 1][c].productId;
-          const above2 = board[r - 2][c].productId;
-          if (above1 === above2) {
-            validProductIds = validProductIds.filter((p) => p !== above1);
-          }
-        }
-
-        const chosenProductId =
-          validProductIds[Math.floor(Math.random() * validProductIds.length)];
-
-        row.push({
-          id: generateTileId(),
-          productId: chosenProductId,
-          row: r,
-          col: c,
-        });
-      }
-      board.push(row);
-    }
+    board = createNoMatchBoard();
     attempts++;
   } while (!hasValidMoves(board) && attempts < 100);
 
-  return board;
+  return hasValidMoves(board) && findMatches(board).matchedTileIds.size === 0
+    ? board
+    : createGuaranteedPlayableBoard();
 }
 
 /**
@@ -68,6 +102,7 @@ export function areAdjacent(
   r2: number,
   c2: number
 ): boolean {
+  if (!isInBounds(r1, c1) || !isInBounds(r2, c2)) return false;
   const dr = Math.abs(r1 - r2);
   const dc = Math.abs(c1 - c2);
   return (dr === 1 && dc === 0) || (dr === 0 && dc === 1);
@@ -83,6 +118,8 @@ export function swapTilesOnBoard(
   r2: number,
   c2: number
 ): Tile[][] {
+  if (!isInBounds(r1, c1) || !isInBounds(r2, c2)) return board;
+
   const newBoard = board.map((row) => [...row]);
   const temp = { ...newBoard[r1][c1] };
 
@@ -99,6 +136,31 @@ export function swapTilesOnBoard(
   };
 
   return newBoard;
+}
+
+function pickRefillProduct(
+  partialBoard: Tile[][],
+  currentColumn: Tile[],
+  row: number,
+  col: number
+): SaaSProductId {
+  const excluded: SaaSProductId[] = [];
+
+  if (
+    row >= 2 &&
+    currentColumn[row - 1]?.productId === currentColumn[row - 2]?.productId
+  ) {
+    excluded.push(currentColumn[row - 1].productId);
+  }
+
+  if (
+    col >= 2 &&
+    partialBoard[row]?.[col - 1]?.productId === partialBoard[row]?.[col - 2]?.productId
+  ) {
+    excluded.push(partialBoard[row][col - 1].productId);
+  }
+
+  return pickRandomProduct(excluded);
 }
 
 export interface MatchResult {
@@ -199,7 +261,7 @@ export function applyGravityAndRefill(
       newTileIds.add(newId);
       updatedCol.push({
         id: newId,
-        productId: Math.floor(Math.random() * NUM_PRODUCTS) as SaaSProductId,
+        productId: pickRefillProduct(newBoard, updatedCol, rIndex, c),
         row: rIndex,
         col: c,
         isNew: true,
@@ -255,10 +317,10 @@ export function hasValidMoves(board: Tile[][]): boolean {
  * Shuffle current board tiles randomly until no immediate matches but valid move exists
  */
 export function shuffleBoard(board: Tile[][]): Tile[][] {
-  const allTiles: Tile[] = [];
+  const sourceTiles: Tile[] = [];
   for (let r = 0; r < BOARD_SIZE; r++) {
     for (let c = 0; c < BOARD_SIZE; c++) {
-      allTiles.push(board[r][c]);
+      sourceTiles.push(board[r][c]);
     }
   }
 
@@ -266,6 +328,8 @@ export function shuffleBoard(board: Tile[][]): Tile[][] {
   let attempts = 0;
 
   do {
+    const allTiles = sourceTiles.map((tile) => ({ ...tile, isNew: false }));
+
     // Fisher-Yates shuffle
     for (let i = allTiles.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -292,7 +356,9 @@ export function shuffleBoard(board: Tile[][]): Tile[][] {
     attempts < 200
   );
 
-  return shuffledBoard;
+  return findMatches(shuffledBoard).matchedTileIds.size === 0 && hasValidMoves(shuffledBoard)
+    ? shuffledBoard
+    : createInitialBoard();
 }
 
 /**

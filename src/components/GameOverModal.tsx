@@ -95,11 +95,11 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050508]/85 p-3 backdrop-blur-md sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#f5fff8]/90 p-3 backdrop-blur-md sm:p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.8, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl border border-white/10 bg-white/5 p-5 text-center shadow-2xl backdrop-blur-2xl sm:p-8"
+        className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl border border-[#d9e8df] bg-[#f5fff8] p-5 text-center shadow-2xl backdrop-blur-2xl sm:p-8"
       >
         {/* Glow Header Top */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-amber-400 shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
@@ -111,10 +111,10 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
           </span>
         </div>
 
-        <h2 className="text-2xl font-bold uppercase tracking-tight text-white sm:text-4xl">
+        <h2 className="text-2xl font-bold uppercase tracking-tight text-black sm:text-4xl">
           Game Over!
         </h2>
-        <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/50">
+        <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-black/50">
           Great performance at the Tech Expo Arena in {mode === 'zen' ? 'Zen Mode' : 'Timed Mode'}
         </p>
 
@@ -129,18 +129,18 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
         </div>
 
         {/* Stats Grid */}
-        <div className="my-4 grid grid-cols-2 gap-2.5 rounded-2xl border border-white/10 bg-white/5 p-4 text-left sm:grid-cols-4">
+        <div className="my-4 grid grid-cols-2 gap-2.5 rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-4 text-left sm:grid-cols-4">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-black/50">
               Final Score
             </span>
-            <div className="font-mono text-lg font-bold text-white">
+            <div className="font-mono text-lg font-bold text-black">
               {score.toLocaleString()}
             </div>
           </div>
 
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-black/50">
               Matches
             </span>
             <div className="font-mono text-lg font-bold text-emerald-400">
@@ -149,7 +149,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
           </div>
 
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-black/50">
               Max Combo
             </span>
             <div className="font-mono text-lg font-bold text-cyan-400">
@@ -158,7 +158,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
           </div>
 
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-black/50">
               Time Played
             </span>
             <div className="font-mono text-lg font-bold text-orange-400">
@@ -171,7 +171,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
         {!isSaved ? (
           <form
             onSubmit={handleSave}
-            className="mb-5 flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-2 sm:flex-row"
+            className="mb-5 flex flex-col gap-2 rounded-xl border border-[#d9e8df] bg-[#f5fff8] p-2 sm:flex-row"
           >
             <input
               type="text"
@@ -179,12 +179,12 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
               maxLength={20}
-              className="min-w-0 flex-1 bg-transparent px-3 py-2 text-xs font-medium text-white placeholder-white/40 focus:outline-none"
+              className="min-w-0 flex-1 bg-transparent px-3 py-2 text-xs font-medium text-black placeholder-black/40 focus:outline-none"
             />
             <button
               type="submit"
               disabled={!playerName.trim()}
-              className="w-full shrink-0 rounded-lg bg-white px-4 py-2 text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-cyan-400 disabled:opacity-40 sm:w-auto"
+              className="w-full shrink-0 rounded-lg bg-[#1b9e4b] px-4 py-2 text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-[#17903f] disabled:opacity-40 sm:w-auto"
             >
               Save
             </button>
@@ -199,7 +199,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
         <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
           <button
             onClick={onPlayAgain}
-            className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-bold uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-cyan-400"
+            className="flex items-center justify-center gap-2 rounded-xl bg-[#1b9e4b] px-4 py-3 text-xs font-bold uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-[#17903f]"
           >
             <RefreshCw className="h-4 w-4" />
             <span>Play Again</span>
@@ -207,17 +207,17 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
 
           <button
             onClick={onOpenLeaderboard}
-            className="flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-xs font-bold uppercase tracking-widest text-white transition-all hover:bg-white/20"
+            className="flex items-center justify-center gap-2 rounded-xl border border-[#d9e8df] bg-[#f5fff8] px-4 py-3 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6]"
           >
-            <Trophy className="h-4 w-4 text-amber-400" />
+            <Trophy className="h-4 w-4 text-black" />
             <span>Leaderboard</span>
           </button>
 
           <button
             onClick={onOpenCodex}
-            className="flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-xs font-bold uppercase tracking-widest text-white transition-all hover:bg-white/20"
+            className="flex items-center justify-center gap-2 rounded-xl border border-[#d9e8df] bg-[#f5fff8] px-4 py-3 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6]"
           >
-            <BookOpen className="h-4 w-4 text-cyan-400" />
+            <BookOpen className="h-4 w-4 text-black" />
             <span>SaaS Specs</span>
           </button>
         </div>

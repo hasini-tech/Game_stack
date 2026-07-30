@@ -26,9 +26,9 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-400 backdrop-blur-md sm:text-xs"
+          className="inline-flex items-center gap-2 rounded-full border border-[#d9e8df] bg-[#f5fff8] px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-black backdrop-blur-md sm:text-xs"
         >
-          <Sparkles className="h-4 w-4 animate-pulse text-cyan-400" />
+          <Sparkles className="h-4 w-4 animate-pulse text-black" />
           <span>TECH EXPO 2026 OFFICIAL SHOWCASE</span>
         </motion.div>
 
@@ -39,10 +39,10 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           transition={{ duration: 0.5 }}
           className="space-y-3"
         >
-          <h1 className="text-3xl font-black uppercase leading-none tracking-tight text-white sm:text-6xl sm:leading-tight">
-            Tech Expo <span className="text-cyan-400">SaaS Crush</span>
+          <h1 className="text-3xl font-black uppercase leading-none tracking-tight text-black sm:text-6xl sm:leading-tight">
+            Tech Expo <span className="text-black">SaaS Crush</span>
           </h1>
-          <p className="mx-auto max-w-xl text-xs font-bold uppercase tracking-widest text-white/60 sm:text-sm">
+          <p className="mx-auto max-w-xl text-xs font-bold uppercase tracking-widest text-black/60 sm:text-sm">
             Match Enterprise Solutions - Unlock SaaS Intelligence
           </p>
         </motion.div>
@@ -59,7 +59,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
               key={prod.id}
               onClick={onOpenCodex}
               title={`${prod.name} - ${prod.tagline}`}
-              className="cursor-pointer rounded-2xl border border-white/10 bg-white/5 p-2.5 shadow-lg backdrop-blur-md transition-all hover:scale-110 hover:border-cyan-400/50 sm:p-3"
+              className="cursor-pointer rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-2.5 shadow-lg backdrop-blur-md transition-all hover:scale-110 hover:border-[#1b9e4b] sm:p-3"
             >
               <SaaSLogo id={prod.id} size={36} glow={true} />
             </div>
@@ -75,7 +75,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
         >
           <button
             onClick={() => onStartGame('timed')}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-8 py-4 text-xs font-bold uppercase tracking-widest text-black shadow-2xl transition-colors hover:bg-cyan-400"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1b9e4b] px-8 py-4 text-xs font-bold uppercase tracking-widest text-black shadow-2xl transition-colors hover:bg-[#17903f]"
           >
             <Play className="h-4 w-4 fill-black" />
             <span>60s Expo Blitz</span>
@@ -83,9 +83,9 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
 
           <button
             onClick={() => onStartGame('zen')}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-4 text-xs font-bold uppercase tracking-widest text-white transition-all hover:bg-white/20"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#d9e8df] bg-[#f5fff8] px-6 py-4 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6]"
           >
-            <Layers className="h-4 w-4 text-purple-400" />
+            <Layers className="h-4 w-4 text-black" />
             <span>Free Play</span>
           </button>
         </motion.div>
@@ -94,22 +94,22 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
         <div className="flex flex-col items-center justify-center gap-3 pt-4 sm:flex-row sm:gap-6">
           <button
             onClick={onOpenCodex}
-            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-white/60 transition-colors hover:text-cyan-400"
+            className="flex min-h-10 items-center gap-1.5 rounded-md border border-[#d9e8df] bg-[#f5fff8] px-3 py-2 text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-[#e6f8e6]"
           >
-            <BookOpen className="h-4 w-4 text-cyan-400" /> Explore 7 SaaS Specs
+            <BookOpen className="h-4 w-4 text-black" /> Explore 7 SaaS Specs
           </button>
 
           <button
             onClick={onOpenLeaderboard}
-            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-white/60 transition-colors hover:text-amber-300"
+            className="flex min-h-10 items-center gap-1.5 rounded-md border border-[#d9e8df] bg-[#f5fff8] px-3 py-2 text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-[#e6f8e6]"
           >
-            <Trophy className="h-4 w-4 text-amber-400" /> Best: {highScore.toLocaleString()}
+            <Trophy className="h-4 w-4 text-black" /> Best: {highScore.toLocaleString()}
           </button>
         </div>
       </div>
 
       {/* Expo Footer Info */}
-      <div className="relative z-10 flex w-full flex-col items-center justify-between gap-2 border-t border-white/10 pt-6 text-center text-[10px] font-bold uppercase tracking-widest text-white/40 sm:flex-row sm:text-left">
+      <div className="relative z-10 flex w-full flex-col items-center justify-between gap-2 border-t border-[#d9e8df] pt-6 text-center text-[10px] font-bold uppercase tracking-widest text-black/60 sm:flex-row sm:text-left">
         <span>2026 Tech Expo Enterprise Systems</span>
         <span>Match 3 icons to unlock instant product insights and QR demos</span>
       </div>
