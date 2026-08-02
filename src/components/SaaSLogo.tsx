@@ -11,7 +11,7 @@ const logoImageFilesByKey: Partial<Record<string, string[]>> = {
   growthlab: ['insta-x-bot.png'],
   ciphergate: ['ciphergate.jpeg'],
   fynovo: ['Fynlog.png'],
-  devpulse: ['Fynlog.png'],
+  devpulse: ['billzzy-logo.png'],
   cloudsync: ['lite-logo.png'],
   omnidata: ['f3-icon.png'],
   pulsecrm: ['gowhat.png'],
