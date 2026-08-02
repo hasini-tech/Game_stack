@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { Trophy, RefreshCw, BookOpen, Medal, Sparkles, Check } from 'lucide-react';
@@ -13,7 +13,8 @@ interface GameOverModalProps {
   onPlayAgain: () => void;
   onOpenCodex: () => void;
   onOpenLeaderboard: () => void;
-  onSaveScore: (playerName: string) => void;
+  onSaveScore: (playerName: string) => Promise<void> | void;
+  initialPlayerName?: string;
 }
 
 export function calculateRankTier(score: number): RankTier {
@@ -33,9 +34,12 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   onOpenCodex,
   onOpenLeaderboard,
   onSaveScore,
+  initialPlayerName = '',
 }) => {
-  const [playerName, setPlayerName] = useState<string>('');
   const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const hasSaveAttemptedRef = useRef(false);
   const rank = calculateRankTier(score);
 
   // Trigger confetti when game over modal mounts!
@@ -87,12 +91,31 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
 
   const badgeStyle = getRankBadgeStyle(rank);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!playerName.trim() || isSaved) return;
-    onSaveScore(playerName.trim());
-    setIsSaved(true);
-  };
+  useEffect(() => {
+    if (hasSaveAttemptedRef.current) return;
+
+    // Always attempt to save the score when modal mounts. If we don't have
+    // a captured lead name, use a short guest fallback so the backend will
+    // accept and persist the score (server requires a non-empty playerName).
+    const fallbackName = `Guest Player`;
+    const playerName = initialPlayerName.trim() || fallbackName;
+
+    hasSaveAttemptedRef.current = true;
+    setIsSaving(true);
+    setSaveError(null);
+
+    onSaveScore(playerName)
+      .then(() => {
+        setIsSaved(true);
+        onOpenLeaderboard();
+      })
+      .catch(() => {
+        setSaveError('Score could not be saved. Please try again.');
+      })
+      .finally(() => {
+        setIsSaving(false);
+      });
+  }, [initialPlayerName, onOpenLeaderboard, onSaveScore]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#f5fff8]/90 p-3 backdrop-blur-md sm:p-4">
@@ -167,31 +190,21 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
           </div>
         </div>
 
-        {/* Save High Score Form */}
-        {!isSaved ? (
-          <form
-            onSubmit={handleSave}
-            className="mb-5 flex flex-col gap-2 rounded-xl border border-[#d9e8df] bg-[#f5fff8] p-2 sm:flex-row"
-          >
-            <input
-              type="text"
-              placeholder="Enter Expo Player Name..."
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              maxLength={20}
-              className="min-w-0 flex-1 bg-transparent px-3 py-2 text-xs font-medium text-black placeholder-black/40 focus:outline-none"
-            />
-            <button
-              type="submit"
-              disabled={!playerName.trim()}
-              className="w-full shrink-0 rounded-lg bg-[#1b9e4b] px-4 py-2 text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-[#17903f] disabled:opacity-40 sm:w-auto"
-            >
-              Save
-            </button>
-          </form>
-        ) : (
+        {isSaving && (
+          <div className="mb-5 flex items-center justify-center gap-1.5 rounded-xl border border-[#d9e8df] bg-[#f5fff8] p-2 text-xs font-bold uppercase tracking-widest text-black/60">
+            Saving score to leaderboard
+          </div>
+        )}
+
+        {isSaved && (
           <div className="mb-5 flex items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/20 p-2 text-xs font-bold uppercase tracking-widest text-emerald-300">
             <Check className="h-4 w-4" /> Score Saved to Leaderboard!
+          </div>
+        )}
+
+        {saveError && (
+          <div className="mb-5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-2 text-xs font-bold uppercase tracking-widest text-rose-500">
+            {saveError}
           </div>
         )}
 

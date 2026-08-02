@@ -8,7 +8,8 @@ import { ProductPopup } from './components/ProductPopup';
 import { ProductCodexModal } from './components/ProductCodex';
 import { GameOverModal } from './components/GameOverModal';
 import { LeaderboardModal } from './components/LeaderboardModal';
-import { SaaSProductId } from './types/game';
+import { LeadCaptureModal } from './components/LeadCaptureModal';
+import { GameMode, SaaSProductId } from './types/game';
 import { Play, RotateCcw, BookOpen } from 'lucide-react';
 
 export default function App() {
@@ -42,6 +43,9 @@ export default function App() {
   const [showCodex, setShowCodex] = useState<boolean>(false);
   const [codexInitialId, setCodexInitialId] = useState<SaaSProductId>(0);
   const [showLeaderboard, setShowLeaderboard] = useState<boolean>(false);
+  const [leadProductId, setLeadProductId] = useState<SaaSProductId | null>(null);
+  const [pendingGameMode, setPendingGameMode] = useState<GameMode>('timed');
+  const [currentLead, setCurrentLead] = useState<{ id: string; fullName: string } | null>(null);
 
   const openCodexWithProduct = useCallback((id: SaaSProductId = 0) => {
     setCodexInitialId(id);
@@ -51,6 +55,27 @@ export default function App() {
   const closeEducationalProduct = useCallback(() => {
     setEducationalProductId(null);
   }, [setEducationalProductId]);
+
+  const handleProductPreviewClick = useCallback((id: SaaSProductId) => {
+    if (id === 2) {
+      setPendingGameMode('timed');
+      setLeadProductId(id);
+      return;
+    }
+
+    openCodexWithProduct(id);
+  }, [openCodexWithProduct]);
+
+  const requestGameStart = useCallback((chosenMode: GameMode) => {
+    setPendingGameMode(chosenMode);
+    setLeadProductId(2);
+  }, []);
+
+  const handleLeadSaved = useCallback((lead: { id: string; fullName: string }) => {
+    setCurrentLead(lead);
+    setLeadProductId(null);
+    startGame(pendingGameMode);
+  }, [pendingGameMode, startGame]);
 
   const isGameActive = status === 'playing' || status === 'paused';
 
@@ -76,7 +101,8 @@ export default function App() {
         {status === 'landing' && (
           <LandingScreen
             highScore={highScore}
-            onStartGame={(m) => startGame(m)}
+            onStartGame={requestGameStart}
+            onProductPreviewClick={handleProductPreviewClick}
             onOpenCodex={() => openCodexWithProduct(0)}
             onOpenLeaderboard={() => setShowLeaderboard(true)}
           />
@@ -171,7 +197,8 @@ export default function App() {
             onPlayAgain={() => startGame(mode)}
             onOpenCodex={() => openCodexWithProduct(0)}
             onOpenLeaderboard={() => setShowLeaderboard(true)}
-            onSaveScore={(name) => saveScoreToLeaderboard(name)}
+            onSaveScore={(name) => saveScoreToLeaderboard(name, currentLead?.id)}
+            initialPlayerName={currentLead?.fullName ?? ''}
           />
         )}
 
@@ -186,6 +213,14 @@ export default function App() {
         {/* High Score Leaderboard Modal */}
         {showLeaderboard && (
           <LeaderboardModal onClose={() => setShowLeaderboard(false)} />
+        )}
+
+        {leadProductId !== null && (
+          <LeadCaptureModal
+            productId={leadProductId}
+            onClose={() => setLeadProductId(null)}
+            onSaved={handleLeadSaved}
+          />
         )}
       </main>
 

@@ -18,7 +18,6 @@ import {
   areAdjacent,
 } from '../utils/gameLogic';
 import { audioEngine } from '../utils/audio';
-import { getStoredLeaderboard, saveLeaderboardEntry } from '../components/LeaderboardModal';
 import { calculateRankTier } from '../components/GameOverModal';
 
 const TIMER_INITIAL = 60;
@@ -50,10 +49,23 @@ export function useGameEngine() {
 
   // Load high score on mount
   useEffect(() => {
-    const records = getStoredLeaderboard();
-    if (records.length > 0) {
-      setHighScore(records[0].score);
-    }
+    let isMounted = true;
+
+    fetch('/api/leaderboard')
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((payload) => {
+        const topScore = Number(payload.entries?.[0]?.score);
+        if (isMounted && Number.isFinite(topScore)) {
+          setHighScore(topScore);
+        }
+      })
+      .catch(() => {
+        // Keep the local session high score if the API is unavailable.
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -334,20 +346,29 @@ export function useGameEngine() {
     [resolveCascades, isSessionActive, setBusyState]
   );
 
-  const saveScoreToLeaderboard = (playerName: string) => {
-    saveLeaderboardEntry({
-      playerName,
-      score,
-      maxCombo,
-      totalMatches,
-      rank: calculateRankTier(score),
-      date: new Intl.DateTimeFormat(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      }).format(new Date()),
-      mode,
+  const saveScoreToLeaderboard = async (playerName: string, leadId?: string | null) => {
+    const response = await fetch('/api/scores', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        leadId,
+        playerName,
+        score,
+        maxCombo,
+        totalMatches,
+        rank: calculateRankTier(score),
+        date: new Intl.DateTimeFormat(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }).format(new Date()),
+        mode,
+      }),
     });
+
+    if (!response.ok) {
+      throw new Error('Could not save score.');
+    }
   };
 
   return {

@@ -1,87 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Trophy, X, Trash2, User } from 'lucide-react';
+import { Loader2, Trophy, X, User } from 'lucide-react';
 import { LeaderboardEntry } from '../types/game';
 
 interface LeaderboardModalProps {
   onClose: () => void;
 }
 
-const LOCAL_STORAGE_KEY = 'saas_crush_leaderboard_v1';
-
-export function getStoredLeaderboard(): LeaderboardEntry[] {
-  try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {
-    // Ignore storage parse error
-  }
-  return [
-    {
-      id: 'demo-1',
-      playerName: 'Alex Vance (Tech Lead)',
-      score: 18450,
-      maxCombo: 6,
-      totalMatches: 42,
-      rank: 'Platinum',
-      date: 'Today',
-      mode: 'timed',
-    },
-    {
-      id: 'demo-2',
-      playerName: 'Sarah Chen (DevOps)',
-      score: 12100,
-      maxCombo: 4,
-      totalMatches: 31,
-      rank: 'Gold',
-      date: 'Today',
-      mode: 'timed',
-    },
-    {
-      id: 'demo-3',
-      playerName: 'Jordan Miller',
-      score: 7200,
-      maxCombo: 3,
-      totalMatches: 22,
-      rank: 'Silver',
-      date: 'Yesterday',
-      mode: 'timed',
-    },
-  ];
-}
-
-export function saveLeaderboardEntry(entry: Omit<LeaderboardEntry, 'id'>) {
-  const current = getStoredLeaderboard();
-  const newEntry: LeaderboardEntry = {
-    ...entry,
-    id: `lb-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-  };
-
-  const updated = [...current, newEntry]
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 15);
-
-  try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
-  } catch {
-    // Storage quota or restriction
-  }
-  return updated;
-}
-
 export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) => {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setEntries(getStoredLeaderboard());
-  }, []);
+    let isMounted = true;
 
-  const handleClear = () => {
-    if (confirm('Clear local leaderboard records?')) {
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
-      setEntries([]);
-    }
-  };
+    fetch('/api/leaderboard')
+      .then((response) => {
+        if (!response.ok) throw new Error('Could not load leaderboard.');
+        return response.json();
+      })
+      .then((payload) => {
+        if (!isMounted) return;
+        setEntries(Array.isArray(payload.entries) ? payload.entries : []);
+      })
+      .catch(() => {
+        if (isMounted) {
+          setError('Could not load leaderboard data.');
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#f5fff8]/90 p-3 backdrop-blur-md sm:p-4">
@@ -115,9 +72,18 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
 
         {/* Entries List */}
         <div className="my-4 flex-1 space-y-2.5 overflow-y-auto pr-1">
-          {entries.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2 py-10 text-xs font-bold uppercase tracking-widest text-black/50">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading scores
+            </div>
+          ) : error ? (
+            <div className="py-10 text-center text-xs font-bold uppercase tracking-widest text-rose-500">
+              {error}
+            </div>
+          ) : entries.length === 0 ? (
             <div className="py-10 text-center text-xs font-bold uppercase tracking-widest text-black/50">
-              No recorded scores yet. Claim 1st place now!
+              No database scores yet.
             </div>
           ) : (
             entries.map((item, idx) => (
@@ -142,11 +108,6 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
                       <User className="h-3.5 w-3.5 shrink-0 text-black" />
                       <span className="break-words">{item.playerName}</span>
                     </div>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-black/50">
-                      <span>Combo: x{item.maxCombo}</span>
-                      <span>-</span>
-                      <span>{item.rank}</span>
-                    </div>
                   </div>
                 </div>
 
@@ -154,26 +115,11 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({ onClose }) =
                   <div className="font-mono text-sm font-bold text-black">
                     {item.score.toLocaleString()}
                   </div>
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-black/50">
-                    {item.date}
-                  </div>
                 </div>
               </div>
             ))
           )}
         </div>
-
-        {/* Footer */}
-        {entries.length > 0 && (
-          <div className="flex justify-center border-t border-[#d9e8df] pt-3 sm:justify-end">
-            <button
-              onClick={handleClear}
-              className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-rose-400 opacity-80 transition-opacity hover:text-rose-300 hover:opacity-100"
-            >
-              <Trash2 className="h-3.5 w-3.5" /> Clear
-            </button>
-          </div>
-        )}
       </motion.div>
     </div>
   );

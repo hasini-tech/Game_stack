@@ -8,6 +8,7 @@ import { SaaSLogo } from './SaaSLogo';
 interface LandingScreenProps {
   highScore: number;
   onStartGame: (mode: GameMode) => void;
+  onProductPreviewClick: (productId: typeof SAAS_PRODUCTS[number]['id']) => void;
   onOpenCodex: () => void;
   onOpenLeaderboard: () => void;
 }
@@ -15,6 +16,7 @@ interface LandingScreenProps {
 export const LandingScreen: React.FC<LandingScreenProps> = ({
   highScore,
   onStartGame,
+  onProductPreviewClick,
   onOpenCodex,
   onOpenLeaderboard,
 }) => {
@@ -55,14 +57,15 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           className="flex flex-wrap items-center justify-center gap-2.5 py-2 sm:gap-4 sm:py-3"
         >
           {SAAS_PRODUCTS.map((prod) => (
-            <div
+            <button
+              type="button"
               key={prod.id}
-              onClick={onOpenCodex}
+              onClick={() => onProductPreviewClick(prod.id)}
               title={`${prod.name} - ${prod.tagline}`}
               className="cursor-pointer rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-2.5 shadow-lg backdrop-blur-md transition-all hover:scale-110 hover:border-[#1b9e4b] sm:p-3"
             >
               <SaaSLogo id={prod.id} size={36} glow={true} />
-            </div>
+            </button>
           ))}
         </motion.div>
 
