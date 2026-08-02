@@ -16,10 +16,15 @@ const app = express();
 app.use(express.json({ limit: '20kb' }));
 
 let mongoClient: MongoClient | null = null;
+// In-memory fallback for local development when MongoDB is unreachable.
+let useInMemoryFallback = false;
+const inMemoryRecords: any[] = [];
 
 async function getLeadsCollection() {
   if (!mongoUri) {
-    throw new Error('MONGODB_URI is not configured.');
+    // If no URI configured, enable in-memory fallback for development.
+    useInMemoryFallback = true;
+    throw new Error('MONGODB_URI is not configured. Using in-memory fallback.');
   }
 
   if (!mongoClient) {
@@ -60,19 +65,39 @@ app.post('/api/leads', async (req, res) => {
   }
 
   try {
-    const collection = await getLeadsCollection();
-    const result = await collection.insertOne({
-      fullName,
-      whatsappNumber,
-      email,
-      score: 0,
-      sourceProductId: Number.isFinite(sourceProductId) ? sourceProductId : null,
-      sourceProductName,
-      createdAt: new Date(),
-      userAgent: req.get('user-agent') ?? '',
-    });
+    try {
+      const collection = await getLeadsCollection();
+      const result = await collection.insertOne({
+        fullName,
+        whatsappNumber,
+        email,
+        score: 0,
+        sourceProductId: Number.isFinite(sourceProductId) ? sourceProductId : null,
+        sourceProductName,
+        createdAt: new Date(),
+        userAgent: req.get('user-agent') ?? '',
+      });
 
-    return res.status(201).json({ id: result.insertedId.toString(), fullName });
+      return res.status(201).json({ id: result.insertedId.toString(), fullName });
+    } catch (err) {
+      // Fallback to in-memory storage for development when MongoDB isn't reachable.
+      useInMemoryFallback = true;
+      const id = String(Date.now()) + '-' + Math.floor(Math.random() * 10000);
+      inMemoryRecords.push({
+        _id: id,
+        fullName,
+        whatsappNumber,
+        email,
+        score: 0,
+        sourceProductId: Number.isFinite(sourceProductId) ? sourceProductId : null,
+        sourceProductName,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userAgent: req.get('user-agent') ?? '',
+      });
+
+      return res.status(201).json({ id, fullName });
+    }
   } catch (error) {
     console.error('Failed to save lead', error);
     return res.status(500).json({ message: 'Could not save your details. Please try again.' });
@@ -81,33 +106,50 @@ app.post('/api/leads', async (req, res) => {
 
 app.get('/api/leaderboard', async (_req, res) => {
   try {
-    const collection = await getLeadsCollection();
-    const records = await collection
-      .find(
-        {
-          fullName: { $type: 'string', $ne: '' },
-          score: { $type: 'number', $gt: 0 },
-        },
-        {
-          projection: {
-            fullName: 1,
-            score: 1,
-            updatedAt: 1,
-            createdAt: 1,
+    try {
+      const collection = await getLeadsCollection();
+      const records = await collection
+        .find(
+          {
+            fullName: { $type: 'string', $ne: '' },
+            score: { $type: 'number', $gt: 0 },
           },
-        }
-      )
-      .sort({ score: -1, updatedAt: -1, createdAt: -1 })
-      .limit(25)
-      .toArray();
+          {
+            projection: {
+              fullName: 1,
+              score: 1,
+              updatedAt: 1,
+              createdAt: 1,
+            },
+          }
+        )
+        .sort({ score: -1, updatedAt: -1, createdAt: -1 })
+        .limit(25)
+        .toArray();
 
-    return res.json({
-      entries: records.map((record) => ({
-        id: record._id.toString(),
-        playerName: record.fullName,
-        score: typeof record.score === 'number' ? record.score : 0,
-      })),
-    });
+      return res.json({
+        entries: records.map((record) => ({
+          id: record._id.toString(),
+          playerName: record.fullName,
+          score: typeof record.score === 'number' ? record.score : 0,
+        })),
+      });
+    } catch (err) {
+      // Return leaderboard from in-memory records for local development.
+      useInMemoryFallback = true;
+      const sorted = inMemoryRecords
+        .filter((r) => typeof r.fullName === 'string' && (typeof r.score === 'number' ? r.score > 0 : false))
+        .sort((a, b) => (b.score || 0) - (a.score || 0))
+        .slice(0, 25);
+
+      return res.json({
+        entries: sorted.map((record) => ({
+          id: String(record._id),
+          playerName: record.fullName,
+          score: typeof record.score === 'number' ? record.score : 0,
+        })),
+      });
+    }
   } catch (error) {
     console.error('Failed to load leaderboard', error);
     return res.status(500).json({ message: 'Could not load leaderboard.' });
@@ -131,36 +173,57 @@ app.post('/api/scores', async (req, res) => {
   }
 
   try {
-    const collection = await getLeadsCollection();
-    const scoreFields = {
-      fullName: playerName,
-      score,
-      maxCombo: Number.isFinite(maxCombo) ? maxCombo : 0,
-      totalMatches: Number.isFinite(totalMatches) ? totalMatches : 0,
-      mode,
-      updatedAt: new Date(),
-    };
+    try {
+      const collection = await getLeadsCollection();
+      const scoreFields = {
+        fullName: playerName,
+        score,
+        maxCombo: Number.isFinite(maxCombo) ? maxCombo : 0,
+        totalMatches: Number.isFinite(totalMatches) ? totalMatches : 0,
+        mode,
+        updatedAt: new Date(),
+      };
 
-    if (ObjectId.isValid(leadId)) {
-      const result = await collection.updateOne(
-        { _id: new ObjectId(leadId) },
-        { $set: scoreFields }
-      );
+      if (ObjectId.isValid(leadId)) {
+        const result = await collection.updateOne(
+          { _id: new ObjectId(leadId) },
+          { $set: scoreFields }
+        );
 
-      if (result.matchedCount > 0) {
-        return res.json({ id: leadId });
+        if (result.matchedCount > 0) {
+          return res.json({ id: leadId });
+        }
       }
+
+      const result = await collection.insertOne({
+        ...scoreFields,
+        whatsappNumber: '',
+        email: '',
+        createdAt: new Date(),
+        userAgent: req.get('user-agent') ?? '',
+      });
+
+      return res.status(201).json({ id: result.insertedId.toString() });
+    } catch (err) {
+      // Fallback to in-memory save for development.
+      useInMemoryFallback = true;
+      const id = String(Date.now()) + '-' + Math.floor(Math.random() * 10000);
+      inMemoryRecords.push({
+        _id: id,
+        fullName: playerName,
+        score,
+        maxCombo: Number.isFinite(maxCombo) ? maxCombo : 0,
+        totalMatches: Number.isFinite(totalMatches) ? totalMatches : 0,
+        mode,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        whatsappNumber: '',
+        email: '',
+        userAgent: req.get('user-agent') ?? '',
+      });
+
+      return res.status(201).json({ id });
     }
-
-    const result = await collection.insertOne({
-      ...scoreFields,
-      whatsappNumber: '',
-      email: '',
-      createdAt: new Date(),
-      userAgent: req.get('user-agent') ?? '',
-    });
-
-    return res.status(201).json({ id: result.insertedId.toString() });
   } catch (error) {
     console.error('Failed to save score', error);
     return res.status(500).json({ message: 'Could not save score.' });
