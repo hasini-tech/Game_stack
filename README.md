@@ -10,6 +10,9 @@ View your app in AI Studio: https://ai.studio/apps/6f5858c8-2318-4120-9787-e357b
 
 ## Run Locally
 
+Create a .env.local file with the MongoDB variables from .env.example.
+The server loads .env.local and .env; it does not load .env.example.
+
 **Prerequisites:**  Node.js
 
 
@@ -20,6 +23,11 @@ View your app in AI Studio: https://ai.studio/apps/6f5858c8-2318-4120-9787-e357b
    `npm run dev`
 
 ## Production
+
+The live deployment must define MONGODB_URI, MONGODB_DB_NAME, and
+MONGODB_COLLECTION_NAME. For MongoDB Atlas, add the deployment's outbound
+network access to the Atlas IP access list. Check /api/health after deploying;
+it should return {"ok":true,"database":"connected"} before testing the form.
 
 Build the frontend and start the Express server so the `/api/leads`,
 `/api/leaderboard`, and `/api/scores` routes are available in the deployed app:

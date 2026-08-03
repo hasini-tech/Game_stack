@@ -1,14 +1,39 @@
-import 'dotenv/config';
+import { config as loadEnv } from 'dotenv';
 import express from 'express';
+import dns from 'node:dns';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
 
+// Load local secrets first, then fall back to the standard .env file.
+// Both files are ignored by git; .env.example is documentation only.
+loadEnv({ path: '.env.local' });
+loadEnv();
+
+// Some local DNS proxies refuse MongoDB SRV lookups. Allow an explicit DNS
+// override and fall back to public resolvers only when Node is using loopback
+// DNS, which keeps mongodb+srv connection strings usable in that environment.
+const configuredMongoDnsServers = process.env.MONGODB_DNS_SERVERS
+  ?.split(',')
+  .map((server) => server.trim())
+  .filter(Boolean);
+const currentDnsServers = dns.getServers();
+if (configuredMongoDnsServers?.length) {
+  dns.setServers(configuredMongoDnsServers);
+} else if (
+  currentDnsServers.length > 0 &&
+  currentDnsServers.every((server) => server === '127.0.0.1' || server === '::1')
+) {
+  dns.setServers(['1.1.1.1', '8.8.8.8']);
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction =
+  process.env.NODE_ENV === 'production' || process.env.npm_lifecycle_event === 'start';
+const allowInMemoryFallback = !isProduction;
 const port = Number(process.env.PORT ?? 3000);
-const mongoUri = process.env.MONGODB_URI;
+const mongoUri = process.env.MONGODB_URI?.trim();
 const mongoDbName = process.env.MONGODB_DB_NAME ?? 'saas_crush';
 const mongoCollectionName = process.env.MONGODB_COLLECTION_NAME ?? 'expo_leads';
 
@@ -22,26 +47,26 @@ app.get('/favicon.ico', (_req, res) => {
 });
 
 let mongoClient: MongoClient | null = null;
-// In-memory fallback for local development when MongoDB is unreachable.
-let useInMemoryFallback = false;
+// In-memory fallback is intentionally limited to local development.
 const inMemoryRecords: any[] = [];
 
 async function getLeadsCollection() {
   if (!mongoUri) {
-    // If no URI configured, enable in-memory fallback for development.
-    useInMemoryFallback = true;
-    throw new Error('MONGODB_URI is not configured. Using in-memory fallback.');
+    throw new Error('MONGODB_URI is not configured.');
   }
 
   if (!mongoClient) {
-    mongoClient = new MongoClient(mongoUri, {
+    const client = new MongoClient(mongoUri, {
       serverApi: {
         version: ServerApiVersion.v1,
         strict: true,
         deprecationErrors: true,
       },
+      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 10000,
     });
-    await mongoClient.connect();
+    await client.connect();
+    mongoClient = client;
   }
 
   return mongoClient.db(mongoDbName).collection(mongoCollectionName);
@@ -50,6 +75,26 @@ async function getLeadsCollection() {
 function cleanText(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
 }
+
+function databaseErrorMessage() {
+  return mongoUri
+    ? 'Database is temporarily unavailable. Please try again.'
+    : 'Database is not configured for this deployment.';
+}
+
+app.get('/api/health', async (_req, res) => {
+  try {
+    const collection = await getLeadsCollection();
+    await collection.findOne({}, { projection: { _id: 1 } });
+    return res.json({ ok: true, database: 'connected' });
+  } catch (error) {
+    console.error('[database] Health check failed', error);
+    return res.status(503).json({
+      ok: false,
+      database: mongoUri ? 'unavailable' : 'not_configured',
+    });
+  }
+});
 
 app.post('/api/leads', async (req, res) => {
   const fullName = cleanText(req.body?.fullName);
@@ -86,8 +131,11 @@ app.post('/api/leads', async (req, res) => {
 
       return res.status(201).json({ id: result.insertedId.toString(), fullName });
     } catch (err) {
-      // Fallback to in-memory storage for development when MongoDB isn't reachable.
-      useInMemoryFallback = true;
+      console.error('[database] Failed to save lead', err);
+      if (!allowInMemoryFallback) {
+        return res.status(503).json({ message: databaseErrorMessage() });
+      }
+
       const id = String(Date.now()) + '-' + Math.floor(Math.random() * 10000);
       inMemoryRecords.push({
         _id: id,
@@ -141,8 +189,11 @@ app.get('/api/leaderboard', async (_req, res) => {
         })),
       });
     } catch (err) {
-      // Return leaderboard from in-memory records for local development.
-      useInMemoryFallback = true;
+      console.error('[database] Failed to load leaderboard', err);
+      if (!allowInMemoryFallback) {
+        return res.status(503).json({ message: databaseErrorMessage() });
+      }
+
       const sorted = inMemoryRecords
         .filter((r) => typeof r.fullName === 'string' && (typeof r.score === 'number' ? r.score > 0 : false))
         .sort((a, b) => (b.score || 0) - (a.score || 0))
@@ -211,8 +262,11 @@ app.post('/api/scores', async (req, res) => {
 
       return res.status(201).json({ id: result.insertedId.toString() });
     } catch (err) {
-      // Fallback to in-memory save for development.
-      useInMemoryFallback = true;
+      console.error('[database] Failed to save score', err);
+      if (!allowInMemoryFallback) {
+        return res.status(503).json({ message: databaseErrorMessage() });
+      }
+
       const id = String(Date.now()) + '-' + Math.floor(Math.random() * 10000);
       inMemoryRecords.push({
         _id: id,
