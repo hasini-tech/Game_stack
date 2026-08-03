@@ -33,6 +33,13 @@
 body {
   background-color: #f5fff8;
   color: #000000;
+  overflow-x: hidden;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
 }
 
 @keyframes pulse-subtle {

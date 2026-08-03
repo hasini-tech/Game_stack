@@ -48,7 +48,7 @@ export const ProductPopup: React.FC<ProductPopupProps> = ({
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-          className="fixed inset-x-2 bottom-2 z-50 mx-auto flex w-auto max-w-lg flex-col gap-2 overflow-hidden rounded-xl border border-[#d9e8df] bg-[#f5fff8] p-2 text-left shadow-xl backdrop-blur-xl sm:relative sm:inset-auto sm:w-full sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:rounded-2xl sm:p-3"
+          className="relative z-50 mx-auto mt-2 flex w-full max-w-lg flex-col gap-2 overflow-hidden rounded-xl border border-[#d9e8df] bg-[#f5fff8] p-2 text-left shadow-xl backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:rounded-2xl sm:p-3"
         >
           <div className="absolute top-0 bottom-0 left-0 w-1 bg-cyan-400" />
           <div className="flex min-w-0 items-center gap-3">

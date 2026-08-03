@@ -97,7 +97,7 @@ export default function App() {
       />
 
       {/* Main Content View Switcher */}
-      <main className={`flex-1 min-h-0 flex flex-col items-center justify-start relative z-10 ${isGameActive ? 'overflow-hidden p-1 sm:overflow-y-auto sm:p-4' : 'overflow-y-auto p-2 sm:p-4'}`}>
+      <main className={`flex-1 min-h-0 flex flex-col items-center justify-start relative z-10 ${isGameActive ? 'overflow-x-hidden overflow-y-auto p-2 pb-4 sm:p-4' : 'overflow-y-auto p-2 sm:p-4'}`}>
         {status === 'landing' && (
           <LandingScreen
             highScore={highScore}
@@ -109,7 +109,7 @@ export default function App() {
         )}
 
         {(status === 'playing' || status === 'paused') && (
-          <div className="relative w-full max-w-4xl mx-auto flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 py-1 sm:my-auto sm:gap-3 sm:py-2">
+          <div className="relative mx-auto flex w-full max-w-4xl flex-col items-center justify-start gap-2 py-2 sm:my-auto sm:flex-1 sm:justify-center sm:gap-3 sm:py-2">
             {/* Top HUD */}
             <HUD
               score={score}
