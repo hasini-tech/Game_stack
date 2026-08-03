@@ -18,3 +18,10 @@ View your app in AI Studio: https://ai.studio/apps/6f5858c8-2318-4120-9787-e357b
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Production
+
+Build the frontend and start the Express server so the `/api/leads`,
+`/api/leaderboard`, and `/api/scores` routes are available in the deployed app:
+
+`npm run build && npm start`

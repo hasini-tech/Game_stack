@@ -15,6 +15,12 @@ const mongoCollectionName = process.env.MONGODB_COLLECTION_NAME ?? 'expo_leads';
 const app = express();
 app.use(express.json({ limit: '20kb' }));
 
+// Keep the legacy browser favicon request working for browsers that do not
+// honor the explicit SVG link in index.html.
+app.get('/favicon.ico', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'favicon.svg'));
+});
+
 let mongoClient: MongoClient | null = null;
 // In-memory fallback for local development when MongoDB is unreachable.
 let useInMemoryFallback = false;
