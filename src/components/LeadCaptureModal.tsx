@@ -25,6 +25,12 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+
+    if (!/^\d{10}$/.test(whatsappNumber)) {
+      setError('Please enter a valid 10-digit WhatsApp number.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -99,17 +105,23 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
 
           <label className="block">
             <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-black/60">
-              WhatsApp Number
+              WhatsApp Number (10 digits)
             </span>
             <span className="flex items-center gap-2 rounded-lg border border-[#d9e8df] bg-white px-3 py-2.5 focus-within:border-[#1b9e4b]">
               <Phone className="h-4 w-4 text-black/50" />
               <input
                 value={whatsappNumber}
-                onChange={(event) => setWhatsappNumber(event.target.value)}
+                onChange={(event) => setWhatsappNumber(event.target.value.replace(/\D/g, '').slice(0, 10))}
                 required
-                inputMode="tel"
+                type="tel"
+                inputMode="numeric"
+                minLength={10}
+                maxLength={10}
+                pattern="[0-9]{10}"
+                autoComplete="tel"
+                title="Enter a 10-digit WhatsApp number"
                 className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-black outline-none"
-                placeholder="+91 98765 43210"
+                placeholder="Enter 10-digit number"
               />
             </span>
           </label>

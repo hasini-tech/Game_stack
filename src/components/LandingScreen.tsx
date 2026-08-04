@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Play, Sparkles, Trophy, BookOpen, Layers } from 'lucide-react';
+import { Play, Sparkles, Trophy, BookOpen } from 'lucide-react';
 import { GameMode } from '../types/game';
 import { SAAS_PRODUCTS } from '../data/products';
 import { SaaSLogo } from './SaaSLogo';
@@ -69,12 +69,12 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           ))}
         </motion.div>
 
-        {/* Play CTA Buttons & Modes */}
+        {/* Play CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="grid w-full max-w-md grid-cols-1 gap-3 pt-4 sm:grid-cols-2 sm:gap-4"
+          className="grid w-full max-w-md grid-cols-1 gap-3 pt-4"
         >
           <button
             onClick={() => onStartGame('timed')}
@@ -84,13 +84,6 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             <span>60s Expo Blitz</span>
           </button>
 
-          <button
-            onClick={() => onStartGame('zen')}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#d9e8df] bg-[#f5fff8] px-6 py-4 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6]"
-          >
-            <Layers className="h-4 w-4 text-black" />
-            <span>Free Play</span>
-          </button>
         </motion.div>
 
         {/* Secondary Navigation */}
@@ -114,7 +107,9 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
       {/* Expo Footer Info */}
       <div className="relative z-10 flex w-full flex-col items-center justify-between gap-2 border-t border-[#d9e8df] pt-6 text-center text-[10px] font-bold uppercase tracking-widest text-black/60 sm:flex-row sm:text-left">
         <span>2026 Tech Expo Enterprise Systems</span>
-        <span>Match 3 icons to unlock instant product insights and QR demos</span>
+        <span>Match 3 icons to unlock instant product insights and QR demos</span><br />
+        <br />
+        <span>Powered by Techvaseegrah</span>
       </div>
     </div>
   );

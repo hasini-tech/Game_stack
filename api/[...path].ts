@@ -105,8 +105,8 @@ async function handleLead(req: ApiRequest, res: ApiResponse) {
     return res.status(400).json({ message: 'Please enter a valid full name.' });
   }
 
-  if (!/^[+\d][\d\s().-]{7,19}$/.test(whatsappNumber)) {
-    return res.status(400).json({ message: 'Please enter a valid WhatsApp number.' });
+  if (!/^\d{10}$/.test(whatsappNumber)) {
+    return res.status(400).json({ message: 'Please enter a valid 10-digit WhatsApp number.' });
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
