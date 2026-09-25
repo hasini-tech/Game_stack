@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
-import { Trophy, RefreshCw, BookOpen, Medal, Sparkles, Check } from 'lucide-react';
+import { Trophy, BookOpen, Medal, Sparkles, Check } from 'lucide-react';
 import { RankTier, GameMode } from '../types/game';
 
 interface GameOverModalProps {
@@ -10,7 +10,6 @@ interface GameOverModalProps {
   maxCombo: number;
   timePlayed: number;
   mode: GameMode;
-  onPlayAgain: () => void;
   onOpenCodex: () => void;
   onOpenLeaderboard: () => void;
   onSaveScore: (playerName: string) => Promise<void> | void;
@@ -30,7 +29,6 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   maxCombo,
   timePlayed,
   mode,
-  onPlayAgain,
   onOpenCodex,
   onOpenLeaderboard,
   onSaveScore,
@@ -209,15 +207,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
         )}
 
         {/* Action Buttons */}
-        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
-          <button
-            onClick={onPlayAgain}
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#1b9e4b] px-4 py-3 text-xs font-bold uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-[#17903f]"
-          >
-            <RefreshCw className="h-4 w-4" />
-            <span>Play Again</span>
-          </button>
-
+        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
           <button
             onClick={onOpenLeaderboard}
             className="flex items-center justify-center gap-2 rounded-xl border border-[#d9e8df] bg-[#f5fff8] px-4 py-3 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6]"

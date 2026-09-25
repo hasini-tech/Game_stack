@@ -4,11 +4,11 @@ export const SAAS_PRODUCTS: SaaSProduct[] = [
   {
     id: 0,
     key: 'growthlab',
-    name: 'GrowthLab',
-    tagline: 'AI Marketing Automation Platform',
-    category: 'Marketing & AI',
-    shortDesc: 'Automate multi-channel AI campaigns and smart lead scoring in real-time.',
-    fullDesc: 'GrowthLab leverages autonomous AI agents to build, optimize, and scale global marketing campaigns across search, social, and email with 10x ROI conversion accuracy.',
+    name: 'InstaXBot',
+    tagline: 'Intelligent Instagram Automation',
+    category: 'Marketing Automation',
+    shortDesc: 'Intelligent automation for smoother Instagram operations and faster growth.',
+    fullDesc: 'InstaXBot provides intelligent automation for smoother Instagram operations and faster growth.',
     color: {
       bg: 'bg-fuchsia-950/80',
       text: 'text-fuchsia-400',
@@ -20,21 +20,21 @@ export const SAAS_PRODUCTS: SaaSProduct[] = [
       secondaryHex: '#8b5cf6',
     },
     features: [
-      'Autonomous AI Ad Campaign Manager',
-      'Predictive Customer Lead Scoring',
-      'Real-time Attribution Analytics'
+      'Automated Instagram Operations',
+      'Faster Audience Growth Workflows',
+      'Intelligent Social Automation'
     ],
-    qrUrl: 'https://techexpo2026.saas/products/growthlab',
-    statsLabel: '+340% Marketing ROI'
+    qrUrl: 'https://instaxbot.com/',
+    statsLabel: 'Faster Instagram Growth'
   },
   {
     id: 1,
     key: 'ciphergate',
     name: 'CipherGate',
-    tagline: 'Cyber Security & Compliance Engine',
-    category: 'Cybersecurity',
-    shortDesc: 'Zero-Trust cloud security monitoring and instant threat mitigation.',
-    fullDesc: 'CipherGate delivers continuous Zero-Trust security monitoring, automated threat defense, and one-click compliance auditing for SOC2, ISO27001, and HIPAA.',
+    tagline: 'Real-Time Facial Recognition Attendance',
+    category: 'Workforce Automation',
+    shortDesc: 'Lightning-fast, secure facial recognition attendance automates check-ins with accurate real-time tracking.',
+    fullDesc: 'CipherGate automates attendance check-ins with lightning-fast, secure facial recognition, accurate real-time tracking, and efficient logs.',
     color: {
       bg: 'bg-purple-950/80',
       text: 'text-purple-400',
@@ -46,21 +46,21 @@ export const SAAS_PRODUCTS: SaaSProduct[] = [
       secondaryHex: '#6366f1',
     },
     features: [
-      'Zero-Trust Identity & Access Guard',
-      'Instant AI Cyber Threat Mitigation',
-      'Continuous Automated SOC2 / ISO Audit'
+      'Lightning-Fast Facial Recognition',
+      'Accurate Real-Time Attendance Tracking',
+      'Efficient Automated Attendance Logs'
     ],
-    qrUrl: 'https://techexpo2026.saas/products/ciphergate',
-    statsLabel: '99.999% Zero-Breach Guard'
+    qrUrl: 'https://ciphergate.in/',
+    statsLabel: 'Real-Time Check-In Accuracy'
   },
   {
     id: 2,
     key: 'fynovo',
-    name: 'Fynovo',
-    tagline: 'Smart Financial Management & Billing',
-    category: 'FinTech & RevOps',
-    shortDesc: 'Unified subscription management and automated cash flow AI.',
-    fullDesc: 'Fynovo orchestrates complex multi-currency recurring billing, usage revenue recognition, and predictive AI financial planning for global SaaS enterprises.',
+    name: 'fynovo',
+    tagline: 'Simple Inventory Tracking for Every Tool',
+    category: 'Asset Management',
+    shortDesc: 'Keep track of all your tools in one place and see who has what and where everything is.',
+    fullDesc: 'fynovo makes it fast and simple to track all your tools, ownership, and locations in one place.',
     color: {
       bg: 'bg-blue-950/80',
       text: 'text-blue-400',
@@ -72,21 +72,21 @@ export const SAAS_PRODUCTS: SaaSProduct[] = [
       secondaryHex: '#6366f1',
     },
     features: [
-      'Automated Usage-based RevRec',
-      'Global Multi-Currency Billing Engine',
-      'Predictive AI Cashflow Forecasting'
+      'Centralized Tool Inventory',
+      'Ownership and Location Tracking',
+      'Fast, Simple Asset Lookup'
     ],
-    qrUrl: 'https://techexpo2026.saas/products/fynovo',
-    statsLabel: '100% ASC 606 Compliant'
+    qrUrl: 'https://tools.ciphergate.in/',
+    statsLabel: 'One Place for Every Tool'
   },
   {
     id: 3,
     key: 'cloudsync',
-    name: 'CloudSync',
-    tagline: 'Multi-Cloud Infrastructure Orchestrator',
-    category: 'DevOps & Cloud',
-    shortDesc: 'Deploy, scale, and optimize hybrid cloud workloads across AWS, GCP & Azure.',
-    fullDesc: 'CloudSync provides unified mesh management for Kubernetes and cloud infrastructure with intelligent auto-scaling, disaster recovery, and 40% cost reduction.',
+    name: 'Lite Billzzy',
+    tagline: 'Eco-Friendly Mobile Billing',
+    category: 'Point of Sale',
+    shortDesc: 'A fast, secure, and sustainable mobile-first billing solution for businesses of all sizes.',
+    fullDesc: 'Lite Billzzy streamlines point of sale with an eco-friendly, mobile-first billing solution that replaces paper with fast, secure, and sustainable workflows.',
     color: {
       bg: 'bg-sky-950/80',
       text: 'text-sky-400',
@@ -98,21 +98,21 @@ export const SAAS_PRODUCTS: SaaSProduct[] = [
       secondaryHex: '#2563eb',
     },
     features: [
-      'Multi-Cloud Auto-Healing Infrastructure',
-      'Real-Time FinOps Cost Minimizer',
-      'One-Click Kubernetes Cluster Mesh'
+      'Mobile-First Point of Sale',
+      'Paperless Billing Workflows',
+      'Fast and Secure Transactions'
     ],
-    qrUrl: 'https://techexpo2026.saas/products/cloudsync',
-    statsLabel: '42% Avg Cloud Cost Reduction'
+    qrUrl: 'https://lite.billzzy.com/',
+    statsLabel: 'Fast, Paperless Checkout'
   },
   {
     id: 4,
     key: 'devpulse',
-    name: 'DevPulse',
-    tagline: 'CI/CD & Developer Productivity Suite',
-    category: 'Developer Tools',
-    shortDesc: 'Accelerate engineering speed with instant previews and AI code reviews.',
-    fullDesc: 'DevPulse cuts build and deploy cycle times by 80% with ephemeral preview environments, intelligent test parallelization, and AI pull request code audits.',
+    name: 'Billzzy',
+    tagline: 'Automated Billing and Smart Order Management',
+    category: 'Billing & Orders',
+    shortDesc: 'Streamline billing with automated address entry and smart order management.',
+    fullDesc: 'Billzzy streamlines the billing process and boosts productivity with automated address entry and smart order management.',
     color: {
       bg: 'bg-rose-950/80',
       text: 'text-rose-400',
@@ -124,21 +124,21 @@ export const SAAS_PRODUCTS: SaaSProduct[] = [
       secondaryHex: '#ec4899',
     },
     features: [
-      'Sub-Second CI/CD Build Pipelines',
-      'Instant Ephemeral Branch Previews',
-      'Automated AI Code Quality Guard'
+      'Automated Address Entry',
+      'Smart Order Management',
+      'Faster Billing Workflows'
     ],
-    qrUrl: 'https://techexpo2026.saas/products/devpulse',
-    statsLabel: '5x Deployment Velocity'
+    qrUrl: 'https://billzzy.com/',
+    statsLabel: 'Faster Billing Operations'
   },
   {
     id: 5,
     key: 'omnidata',
-    name: 'OmniData',
-    tagline: 'Big Data Analytics & ML Engine',
-    category: 'Data & AI Platform',
-    shortDesc: 'Sub-second streaming analytics and vector search for enterprise AI.',
-    fullDesc: 'OmniData powers high-throughput data processing, ultra-fast vector similarity search, and automated machine learning model deployment at petabyte scale.',
+    name: 'F3 Engine',
+    tagline: 'Fulfillment Command Center',
+    category: 'Fulfillment Operations',
+    shortDesc: 'Real-time inventory, smart order routing, and powerful analytics in one command center.',
+    fullDesc: 'F3 Engine brings real-time inventory, smart order routing, and powerful analytics together in one command center built for modern fulfillment.',
     color: {
       bg: 'bg-cyan-950/80',
       text: 'text-cyan-400',
@@ -150,21 +150,21 @@ export const SAAS_PRODUCTS: SaaSProduct[] = [
       secondaryHex: '#3b82f6',
     },
     features: [
-      'Sub-10ms Vector Database Querying',
-      'Real-Time Streaming Event Engine',
-      'No-Code AutoML Model Studio'
+      'Real-Time Inventory Visibility',
+      'Smart Order Routing',
+      'Fulfillment Analytics'
     ],
-    qrUrl: 'https://techexpo2026.saas/products/omnidata',
-    statsLabel: '10M+ Events/Sec Engine'
+    qrUrl: 'https://f3engine.com/',
+    statsLabel: 'One Fulfillment Command Center'
   },
   {
     id: 6,
     key: 'pulsecrm',
-    name: 'PulseCRM',
-    tagline: 'Customer Experience & Sales CRM',
-    category: 'Sales & Growth',
-    shortDesc: 'Omnichannel customer relationship hub with AI conversation intelligence.',
-    fullDesc: 'PulseCRM unifies customer communications, sales pipelines, and support tickets with generative AI agents that draft responses and close deals faster.',
+    name: 'GoWhats',
+    tagline: 'Sales and Customer Engagement Automation',
+    category: 'Sales Automation',
+    shortDesc: 'Automate sales, inventory, and customer engagement with powerful API integration.',
+    fullDesc: 'GoWhats automates sales, inventory, and customer engagement to help businesses experience growth on autopilot through powerful API integration.',
     color: {
       bg: 'bg-indigo-950/80',
       text: 'text-indigo-400',
@@ -176,12 +176,12 @@ export const SAAS_PRODUCTS: SaaSProduct[] = [
       secondaryHex: '#a855f7',
     },
     features: [
-      'Unified 360-degree Customer Timeline',
-      'Autonomous Voice & Text Sales Copilot',
-      'Predictive Deal Velocity Analytics'
+      'Automated Sales Workflows',
+      'Inventory Integration',
+      'Customer Engagement API'
     ],
-    qrUrl: 'https://techexpo2026.saas/products/pulsecrm',
-    statsLabel: '2.5x Deal Closure Rate'
+    qrUrl: 'https://gowhats.in/',
+    statsLabel: 'Growth on Autopilot'
   }
 ];
 

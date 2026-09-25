@@ -39,7 +39,23 @@ body {
 html,
 body,
 #root {
+  height: 100%;
   min-height: 100%;
+}
+
+html {
+  background: #f5fff8;
+  overscroll-behavior-y: none;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  touch-action: manipulation;
 }
 
 @keyframes pulse-subtle {

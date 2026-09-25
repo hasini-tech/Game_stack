@@ -34,7 +34,7 @@ export const HUD: React.FC<HUDProps> = ({
   const isTimeWarning = !isZenMode && timeRemaining <= 10 && timeRemaining > 0;
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-0 py-0 sm:px-4 sm:py-2">
+    <div className="mx-auto w-full max-w-4xl px-0 py-0 sm:px-4 sm:py-2">
       <div className="grid grid-cols-4 items-center gap-1.5 rounded-xl border border-[#d9e8df] bg-[#f5fff8] p-2 shadow-lg backdrop-blur-xl sm:flex sm:gap-3 sm:rounded-2xl sm:p-4 lg:justify-between">
         {/* Left Stats: Score & Best */}
         <div className="col-span-2 grid min-w-0 grid-cols-2 gap-1.5 sm:flex sm:w-auto sm:items-center sm:gap-8">
@@ -105,7 +105,7 @@ export const HUD: React.FC<HUDProps> = ({
           <button
             onClick={onOpenCodex}
             title="SaaS Product Codex"
-            className="flex min-h-9 items-center justify-center gap-1.5 rounded-md border border-[#d9e8df] bg-[#f5fff8] px-2 py-2 text-[10px] font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6] sm:min-h-10 sm:px-3 sm:text-xs"
+            className="flex min-h-10 items-center justify-center gap-1.5 rounded-md border border-[#d9e8df] bg-[#f5fff8] px-2 py-2 text-[10px] font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6] sm:min-h-10 sm:px-3 sm:text-xs"
           >
             <BookOpen className="h-3.5 w-3.5 text-black" />
             <span className="hidden md:inline">Specs</span>
@@ -114,7 +114,7 @@ export const HUD: React.FC<HUDProps> = ({
           <button
             onClick={onOpenLeaderboard}
             title="Leaderboard"
-            className="flex min-h-9 items-center justify-center rounded-md border border-[#d9e8df] bg-[#f5fff8] p-2 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6] sm:min-h-10"
+            className="flex min-h-10 items-center justify-center rounded-md border border-[#d9e8df] bg-[#f5fff8] p-2 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6] sm:min-h-10"
           >
             <Trophy className="h-4 w-4" />
           </button>
@@ -122,7 +122,7 @@ export const HUD: React.FC<HUDProps> = ({
           <button
             onClick={onToggleMute}
             title={isMuted ? 'Unmute' : 'Mute'}
-            className="flex min-h-9 items-center justify-center rounded-md border border-[#d9e8df] bg-[#f5fff8] p-2 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6] sm:min-h-10"
+            className="flex min-h-10 items-center justify-center rounded-md border border-[#d9e8df] bg-[#f5fff8] p-2 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6] sm:min-h-10"
           >
             {isMuted ? (
               <VolumeX className="h-4 w-4 text-black" />
@@ -133,7 +133,7 @@ export const HUD: React.FC<HUDProps> = ({
 
           <button
             onClick={onTogglePause}
-            className="flex min-h-9 items-center justify-center gap-1 rounded-md bg-[#1b9e4b] px-2 py-2 text-[10px] font-bold uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-[#17903f] sm:min-h-10 sm:px-3 sm:text-xs"
+            className="flex min-h-10 items-center justify-center gap-1 rounded-md bg-[#1b9e4b] px-2 py-2 text-[10px] font-bold uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-[#17903f] sm:min-h-10 sm:px-3 sm:text-xs"
           >
             {isPaused ? (
               <>

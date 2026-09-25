@@ -49,7 +49,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     const updateSize = () => {
       const containerWidth = containerRef.current ? containerRef.current.clientWidth : window.innerWidth;
       const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-      const screenWidth = Math.max(280, Math.min(containerWidth, window.innerWidth - 12));
+      const screenWidth = Math.max(0, Math.min(containerWidth, window.innerWidth - 24));
       const isCompact = window.innerWidth < 640;
 
       const innerPadding = isCompact ? 12 : 16;
@@ -58,10 +58,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       const reservedVerticalSpace = isCompact ? 166 : 248;
       const heightLimitedContent = Math.max(248, viewportHeight - reservedVerticalSpace - innerPadding);
 
-      const maxAllowedContent = isCompact
-        ? Math.min(screenWidth - innerPadding, 390)
-        : Math.min(screenWidth - innerPadding, heightLimitedContent, 520);
       const minTileSize = window.innerWidth < 340 ? 24 : window.innerWidth < 480 ? 28 : 36;
+      const minimumBoardContent = minTileSize * BOARD_SIZE + totalGaps;
+      const maxAllowedContent = isCompact
+        ? Math.max(minimumBoardContent, Math.min(screenWidth - innerPadding, 390))
+        : Math.max(minimumBoardContent, Math.min(screenWidth - innerPadding, heightLimitedContent, 520));
       const computedTileSize = Math.max(
         minTileSize,
         Math.floor((maxAllowedContent - totalGaps) / BOARD_SIZE)

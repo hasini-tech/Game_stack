@@ -8,13 +8,13 @@ const logoImageModules = import.meta.glob('../../assets/image/*.{png,jpg,jpeg,we
 }) as Record<string, string>;
 
 const logoImageFilesByKey: Partial<Record<string, string[]>> = {
-  growthlab: ['insta-x-bot.png'],
-  ciphergate: ['ciphergate.jpeg'],
+  growthlab: ['botintsa.png'],
+  ciphergate: ['cipher_gate.png'],
   fynovo: ['Fynlog.png'],
   devpulse: ['billzzy-logo.png'],
   cloudsync: ['lite-logo.png'],
   omnidata: ['f3-icon.png'],
-  pulsecrm: ['gowhat.png'],
+  pulsecrm: ['go_whats.png'],
 };
 
 function getLogoImageForKey(key: string): string | null {

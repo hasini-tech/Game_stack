@@ -25,14 +25,14 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="relative flex h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-[#d9e8df] bg-[#f5fff8] p-4 shadow-2xl backdrop-blur-2xl sm:h-[90vh] sm:p-6"
+        className="relative flex h-[calc(100dvh-1rem)] max-h-[calc(100dvh-1rem)] w-full max-w-4xl flex-col overflow-y-auto rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-3 shadow-2xl backdrop-blur-2xl md:overflow-hidden sm:h-[min(90dvh,720px)] sm:max-h-[calc(100dvh-2rem)] sm:rounded-3xl sm:p-6"
       >
         {/* Header Bar */}
-        <div className="flex flex-col gap-3 border-b border-[#d9e8df] pb-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-3 border-b border-[#d9e8df] pb-3 sm:items-center sm:pb-4">
+          <div className="flex min-w-0 items-center gap-3">
             <Sparkles className="h-6 w-6 animate-pulse text-cyan-400" />
             <div>
-              <h2 className="text-xl font-bold uppercase tracking-tight text-black sm:text-2xl">
+              <h2 className="text-lg font-bold uppercase tracking-tight text-black sm:text-2xl">
                 Tech Expo SaaS Codex
               </h2>
               <p className="text-[10px] font-bold uppercase tracking-widest text-black/50">
@@ -43,38 +43,39 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
 
           <button
             onClick={onClose}
-            className="self-end rounded-full border border-[#d9e8df] bg-[#f5fff8] p-2 text-black transition-colors hover:bg-[#e6f8e6] sm:self-auto"
+            aria-label="Close SaaS Codex"
+            className="shrink-0 rounded-full border border-[#d9e8df] bg-[#f5fff8] p-2 text-black transition-colors hover:bg-[#e6f8e6]"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Main Content: Split Grid */}
-        <div className="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto md:grid-cols-12 md:overflow-hidden">
+        <div className="mt-3 flex flex-col gap-3 overflow-visible sm:mt-4 md:grid md:min-h-0 md:flex-1 md:grid-cols-12 md:gap-4 md:overflow-hidden">
           {/* Left Product List Selector (4 cols) */}
-          <div className="flex gap-2 overflow-x-auto pb-2 pr-1 md:col-span-4 md:flex-col md:overflow-y-auto md:pb-0">
+          <div className="flex shrink-0 gap-2 overflow-x-auto pb-1 pr-1 md:col-span-4 md:flex-col md:overflow-y-auto md:pb-0">
             {SAAS_PRODUCTS.map((prod) => {
               const isSelected = prod.id === selectedId;
               return (
                 <button
                   key={prod.id}
                   onClick={() => setSelectedId(prod.id)}
-                  className={`flex shrink-0 items-center gap-3 rounded-2xl border p-3 text-left transition-all md:shrink ${
+                  className={`flex min-w-[148px] shrink-0 items-center gap-2 rounded-xl border p-2 text-left transition-all sm:gap-3 sm:rounded-2xl sm:p-3 md:min-w-0 ${
                     isSelected
                       ? 'border-[#1b9e4b] bg-[#1b9e4b] text-black shadow-lg'
                       : 'border-[#d9e8df] bg-[#f5fff8] text-black hover:bg-[#e6f8e6]'
                   }`}
                 >
-                  <SaaSLogo id={prod.id} size={36} glow={isSelected} />
-                  <div>
+                  <SaaSLogo id={prod.id} size={30} glow={isSelected} />
+                  <div className="min-w-0">
                     <div
-                      className={`text-xs font-bold uppercase tracking-wider ${
+                      className={`truncate text-[10px] font-bold uppercase tracking-wider sm:text-xs ${
                         isSelected ? 'text-black' : 'text-black'
                       }`}
                     >
                       {prod.name}
                     </div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-black/70">
+                    <div className="truncate text-[8px] font-bold uppercase tracking-widest text-black/70 sm:text-[10px]">
                       {prod.category}
                     </div>
                   </div>
@@ -84,7 +85,7 @@ export const ProductCodexModal: React.FC<ProductCodexProps> = ({
           </div>
 
           {/* Right Product Details Sheet (8 cols) */}
-          <div className="flex min-h-0 flex-col justify-between overflow-y-auto rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-4 backdrop-blur-xl md:col-span-8 sm:p-6">
+          <div className="flex flex-none flex-col justify-between overflow-visible rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-3 backdrop-blur-xl md:col-span-8 md:min-h-0 md:overflow-y-auto sm:p-6">
             <div className="space-y-4">
               {/* Product Header */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

@@ -80,7 +80,7 @@ export default function App() {
   const isGameActive = status === 'playing' || status === 'paused';
 
   return (
-    <div className="min-h-screen bg-[#f5fff8] text-black flex flex-col font-sans selection:bg-[#1b9e4b] selection:text-black overflow-x-hidden relative">
+    <div className="relative flex min-h-dvh flex-col overflow-x-hidden bg-[#f5fff8] font-sans text-black selection:bg-[#1b9e4b] selection:text-black">
       {/* Background Ambient Glow Spots */}
       <div className="fixed inset-0 pointer-events-none z-0 bg-[#f5fff8]">
         <div className="absolute inset-x-0 top-0 h-px bg-[#d9e8df]" />
@@ -97,7 +97,7 @@ export default function App() {
       />
 
       {/* Main Content View Switcher */}
-      <main className={`flex-1 min-h-0 flex flex-col items-center justify-start relative z-10 ${isGameActive ? 'overflow-x-hidden overflow-y-auto p-2 pb-4 sm:p-4' : 'overflow-y-auto p-2 sm:p-4'}`}>
+      <main className={`relative flex min-h-0 w-full flex-1 flex-col items-center justify-start ${isGameActive ? 'overflow-x-hidden overflow-y-auto px-2 pb-4 pt-2 sm:p-4' : 'overflow-y-auto p-2 sm:p-4'}`}>
         {status === 'landing' && (
           <LandingScreen
             highScore={highScore}
@@ -109,7 +109,7 @@ export default function App() {
         )}
 
         {(status === 'playing' || status === 'paused') && (
-          <div className="relative mx-auto flex w-full max-w-4xl flex-col items-center justify-start gap-2 py-2 sm:my-auto sm:flex-1 sm:justify-center sm:gap-3 sm:py-2">
+          <div className="relative mx-auto flex w-full max-w-4xl min-w-0 flex-1 flex-col items-center justify-center gap-2 py-2 sm:gap-3 sm:py-2">
             {/* Top HUD */}
             <HUD
               score={score}
@@ -150,8 +150,8 @@ export default function App() {
 
         {/* Pause Modal Overlay */}
         {status === 'paused' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#f5fff8]/90 backdrop-blur-md">
-            <div className="relative w-full max-w-sm rounded-3xl bg-[#f5fff8] border border-[#d9e8df] p-6 shadow-2xl backdrop-blur-xl text-center space-y-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#f5fff8]/90 p-3 backdrop-blur-md sm:p-4">
+            <div className="relative max-h-[calc(100dvh-1.5rem)] w-full max-w-sm space-y-4 overflow-y-auto rounded-3xl border border-[#d9e8df] bg-[#f5fff8] p-5 text-center shadow-2xl backdrop-blur-xl sm:max-h-[calc(100dvh-2rem)] sm:p-6">
               <h2 className="text-2xl font-bold uppercase tracking-tight text-black">Game Paused</h2>
               <p className="text-xs text-black/60">
                 Take a breather! Explore our SaaS products or resume your streak.
@@ -194,7 +194,6 @@ export default function App() {
             maxCombo={maxCombo}
             timePlayed={timePlayed}
             mode={mode}
-            onPlayAgain={() => startGame(mode)}
             onOpenCodex={() => openCodexWithProduct(0)}
             onOpenLeaderboard={() => setShowLeaderboard(true)}
             onSaveScore={(name) => saveScoreToLeaderboard(name, currentLead?.id)}

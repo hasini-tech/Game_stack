@@ -23,7 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const actionGridClass = isLanding ? 'grid grid-cols-3' : 'hidden sm:flex';
 
   return (
-    <header className="sticky top-0 z-40 shrink-0 border-b border-[#d9e8df] bg-[#f5fff8] px-3 py-2 backdrop-blur-md sm:px-8 sm:py-4">
+    <header className="sticky top-0 z-40 shrink-0 border-b border-[#d9e8df] bg-[#f5fff8]/95 px-3 py-2.5 backdrop-blur-md sm:px-8 sm:py-4">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2">
         {/* Logo & Title */}
         <button
@@ -58,6 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={onOpenCodex}
+            aria-label="Open SaaS Codex"
               className="flex min-h-9 items-center justify-center gap-1.5 rounded-md border border-[#d9e8df] bg-[#f5fff8] px-2 py-2 text-[10px] font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6] sm:min-h-10 sm:px-4 sm:text-xs"
           >
             <BookOpen className="w-3.5 h-3.5 text-black" />
@@ -66,6 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={onOpenLeaderboard}
+            aria-label="Open scores"
               className="flex min-h-9 items-center justify-center gap-1.5 rounded-md border border-[#d9e8df] bg-[#f5fff8] px-2 py-2 text-[10px] font-bold uppercase tracking-widest text-black transition-all hover:bg-[#e6f8e6] sm:min-h-10 sm:px-4 sm:text-xs"
           >
             <Trophy className="w-3.5 h-3.5 text-black" />
