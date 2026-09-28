@@ -128,6 +128,35 @@ function whatsappRecipient(phone: string) {
   return `${countryCode}${phone}`;
 }
 
+function providerErrorMessage(providerResponse: unknown, status: number) {
+  const providerError =
+    typeof providerResponse === 'object' && providerResponse !== null && 'error' in providerResponse
+      ? (providerResponse as {
+          error?: {
+            code?: number | string;
+            message?: string;
+            error_data?: { details?: string };
+          };
+        }).error
+      : undefined;
+  const code = String(providerError?.code || '');
+  const details = `${providerError?.message || ''} ${providerError?.error_data?.details || ''}`.toLowerCase();
+
+  if (code === '132001' || details.includes('template')) {
+    return 'WhatsApp OTP template was not found. Check the exact template name and language code in production.';
+  }
+
+  if (code === '131026' || details.includes('recipient') || details.includes('phone number')) {
+    return 'WhatsApp could not deliver to this number. Check the country code and confirm the number uses WhatsApp.';
+  }
+
+  if (code === '190' || status === 401 || status === 403) {
+    return 'WhatsApp access was rejected. Check the production access token and phone number ID.';
+  }
+
+  return `WhatsApp OTP delivery failed (${status}). Check the production WhatsApp configuration.`;
+}
+
 /**
  * Send OTP using Meta WhatsApp Cloud API.
  *
@@ -286,7 +315,7 @@ async function sendWhatsAppMessage(
     );
 
     throw new OtpError(
-      'Could not send the WhatsApp OTP. Please try again.',
+      'Could not reach Meta WhatsApp from production. Check server network access and try again.',
       502
     );
   }
@@ -313,10 +342,7 @@ async function sendWhatsAppMessage(
       }
     );
 
-    throw new OtpError(
-      'Could not send the WhatsApp OTP. Please try again.',
-      502
-    );
+    throw new OtpError(providerErrorMessage(providerResponse, response.status), 502);
   }
 
   console.info(
