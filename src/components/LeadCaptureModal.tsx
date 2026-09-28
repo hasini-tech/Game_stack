@@ -1,8 +1,7 @@
-import React, { FormEvent, useState } from 'react';
-import { Loader2, Mail, Phone, User, X } from 'lucide-react';
+import React, { FormEvent, useEffect, useState } from 'react';
+import { Loader2, Mail, MessageCircle, Phone, ShieldCheck, User, X } from 'lucide-react';
 import { getProductById } from '../data/products';
 import { SaaSProductId } from '../types/game';
-import { SaaSLogo } from './SaaSLogo';
 
 interface LeadCaptureModalProps {
   productId: SaaSProductId;
@@ -19,8 +18,52 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
   const [fullName, setFullName] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [email, setEmail] = useState('');
+  const [whatsappOtp, setWhatsappOtp] = useState('');
+  const [otpChallengeId, setOtpChallengeId] = useState<string | null>(null);
+  const [resendIn, setResendIn] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (resendIn <= 0) return;
+
+    const timer = window.setInterval(() => {
+      setResendIn((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [resendIn]);
+
+  const requestOtp = async () => {
+    if (!/^\d{10}$/.test(whatsappNumber)) {
+      setError('Please enter a valid 10-digit WhatsApp number.');
+      return;
+    }
+
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ whatsappNumber }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.message || 'Could not send the WhatsApp OTP.');
+      }
+
+      setOtpChallengeId(String(payload.challengeId));
+      setWhatsappOtp('');
+      setResendIn(Number(payload.retryAfterSeconds) || 60);
+    } catch (sendError) {
+      setError(sendError instanceof Error ? sendError.message : 'Could not send the WhatsApp OTP.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -28,6 +71,16 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
 
     if (!/^\d{10}$/.test(whatsappNumber)) {
       setError('Please enter a valid 10-digit WhatsApp number.');
+      return;
+    }
+
+    if (!otpChallengeId) {
+      await requestOtp();
+      return;
+    }
+
+    if (!/^\d{6}$/.test(whatsappOtp)) {
+      setError('Please enter the 6-digit WhatsApp OTP.');
       return;
     }
 
@@ -41,6 +94,8 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
           fullName,
           whatsappNumber,
           email,
+          otpChallengeId,
+          whatsappOtp,
           sourceProductId: product.id,
           sourceProductName: product.name,
         }),
@@ -111,7 +166,15 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
               <Phone className="h-4 w-4 text-black/50" />
               <input
                 value={whatsappNumber}
-                onChange={(event) => setWhatsappNumber(event.target.value.replace(/\D/g, '').slice(0, 10))}
+                onChange={(event) => {
+                  const nextNumber = event.target.value.replace(/\D/g, '').slice(0, 10);
+                  setWhatsappNumber(nextNumber);
+                  if (otpChallengeId) {
+                    setOtpChallengeId(null);
+                    setWhatsappOtp('');
+                    setResendIn(0);
+                  }
+                }}
                 required
                 type="tel"
                 inputMode="numeric"
@@ -125,6 +188,42 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
               />
             </span>
           </label>
+
+          {otpChallengeId && (
+            <label className="block">
+              <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-black/60">
+                WhatsApp OTP
+              </span>
+              <span className="flex items-center gap-2 rounded-lg border border-[#d9e8df] bg-white px-3 py-2.5 focus-within:border-[#1b9e4b]">
+                <ShieldCheck className="h-4 w-4 text-black/50" />
+                <input
+                  value={whatsappOtp}
+                  onChange={(event) => setWhatsappOtp(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                  required
+                  type="tel"
+                  inputMode="numeric"
+                  minLength={6}
+                  maxLength={6}
+                  pattern="[0-9]{6}"
+                  autoComplete="one-time-code"
+                  className="min-w-0 flex-1 bg-transparent text-sm font-semibold tracking-[0.3em] text-black outline-none"
+                  placeholder="Enter 6-digit OTP"
+                />
+              </span>
+              <span className="mt-1.5 flex items-center justify-between gap-3 text-[10px] font-semibold text-black/50">
+                <span>Code sent to +91 {whatsappNumber}</span>
+                <button
+                  type="button"
+                  onClick={requestOtp}
+                  disabled={isSubmitting || resendIn > 0}
+                  className="inline-flex shrink-0 items-center gap-1 text-black underline underline-offset-2 transition-colors hover:text-[#1b9e4b] disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50"
+                >
+                  <MessageCircle className="h-3 w-3" />
+                  {resendIn > 0 ? `Resend in ${resendIn}s` : 'Send again'}
+                </button>
+              </span>
+            </label>
+          )}
 
           <label className="block">
             <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-black/60">
@@ -156,7 +255,15 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1b9e4b] px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-[#17903f] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            <span>{isSubmitting ? 'Submitting' : 'Submit & Play'}</span>
+            <span>
+              {isSubmitting
+                ? otpChallengeId
+                  ? 'Verifying'
+                  : 'Sending OTP'
+                : otpChallengeId
+                  ? 'Verify & Play'
+                  : 'Send WhatsApp OTP'}
+            </span>
           </button>
         </form>
       </div>

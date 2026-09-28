@@ -102,7 +102,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
     setIsSaving(true);
     setSaveError(null);
 
-    onSaveScore(playerName)
+    Promise.resolve(onSaveScore(playerName))
       .then(() => {
         setIsSaved(true);
         onOpenLeaderboard();

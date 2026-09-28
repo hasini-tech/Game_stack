@@ -1,5 +1,11 @@
 import dns from 'node:dns';
 import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
+import {
+  createMongoOtpStore,
+  OtpError,
+  sendOtp,
+  verifyOtp,
+} from './otp.ts';
 
 type ApiRequest = {
   method?: string;
@@ -18,6 +24,7 @@ type RequestBody = Record<string, unknown>;
 const mongoUri = process.env.MONGODB_URI?.trim();
 const mongoDbName = process.env.MONGODB_DB_NAME ?? 'saas_crush';
 const mongoCollectionName = process.env.MONGODB_COLLECTION_NAME ?? 'expo_leads';
+const mongoOtpCollectionName = process.env.MONGODB_OTP_COLLECTION_NAME ?? 'expo_otp_challenges';
 
 const configuredDnsServers = process.env.MONGODB_DNS_SERVERS
   ?.split(',')
@@ -35,7 +42,7 @@ if (configuredDnsServers?.length) {
 
 let mongoClientPromise: Promise<MongoClient> | undefined;
 
-async function getLeadsCollection() {
+async function getMongoClient() {
   if (!mongoUri) {
     throw new Error('MONGODB_URI is not configured.');
   }
@@ -57,8 +64,17 @@ async function getLeadsCollection() {
     });
   }
 
-  const client = await mongoClientPromise;
+  return mongoClientPromise;
+}
+
+async function getLeadsCollection() {
+  const client = await getMongoClient();
   return client.db(mongoDbName).collection(mongoCollectionName);
+}
+
+async function getOtpStore() {
+  const client = await getMongoClient();
+  return createMongoOtpStore(client.db(mongoDbName).collection(mongoOtpCollectionName));
 }
 
 function cleanText(value: unknown) {
@@ -93,6 +109,23 @@ function userAgent(req: ApiRequest) {
   return typeof value === 'string' ? value : '';
 }
 
+async function handleSendOtp(req: ApiRequest, res: ApiResponse) {
+  const body = requestBody(req);
+  const whatsappNumber = cleanText(body.whatsappNumber);
+
+  try {
+    const result = await sendOtp(whatsappNumber, await getOtpStore());
+    return res.json(result);
+  } catch (error) {
+    if (error instanceof OtpError) {
+      return res.status(error.status).json({ message: error.message });
+    }
+
+    console.error('[otp] Vercel WhatsApp OTP send failed', error);
+    return res.status(500).json({ message: 'Could not send the WhatsApp OTP. Please try again.' });
+  }
+}
+
 async function handleLead(req: ApiRequest, res: ApiResponse) {
   const body = requestBody(req);
   const fullName = cleanText(body.fullName);
@@ -100,6 +133,8 @@ async function handleLead(req: ApiRequest, res: ApiResponse) {
   const email = cleanText(body.email).toLowerCase();
   const sourceProductId = Number(body.sourceProductId);
   const sourceProductName = cleanText(body.sourceProductName);
+  const otpChallengeId = cleanText(body.otpChallengeId);
+  const whatsappOtp = cleanText(body.whatsappOtp);
 
   if (fullName.length < 2 || fullName.length > 80) {
     return res.status(400).json({ message: 'Please enter a valid full name.' });
@@ -111,6 +146,21 @@ async function handleLead(req: ApiRequest, res: ApiResponse) {
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
     return res.status(400).json({ message: 'Please enter a valid email address.' });
+  }
+
+  if (!otpChallengeId || !/^\d{6}$/.test(whatsappOtp)) {
+    return res.status(400).json({ message: 'Please verify your WhatsApp number before playing.' });
+  }
+
+  try {
+    await verifyOtp(whatsappNumber, otpChallengeId, whatsappOtp, await getOtpStore());
+  } catch (error) {
+    if (error instanceof OtpError) {
+      return res.status(error.status).json({ message: error.message });
+    }
+
+    console.error('[otp] Vercel WhatsApp OTP verification failed', error);
+    return res.status(503).json({ message: 'Could not verify the WhatsApp OTP. Please try again.' });
   }
 
   try {
@@ -242,6 +292,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
   if (pathname === '/api/health' && method === 'GET') {
     return handleHealth(res);
+  }
+
+  if (pathname === '/api/otp/send' && method === 'POST') {
+    return handleSendOtp(req, res);
   }
 
   if (pathname === '/api/leads' && method === 'POST') {

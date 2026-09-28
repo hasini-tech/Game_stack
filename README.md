@@ -24,10 +24,17 @@ The server loads .env.local and .env; it does not load .env.example.
 
 ## Production
 
-The live deployment must define MONGODB_URI, MONGODB_DB_NAME, and
-MONGODB_COLLECTION_NAME. For MongoDB Atlas, add the deployment's outbound
-network access to the Atlas IP access list. Check /api/health after deploying;
-it should return {"ok":true,"database":"connected"} before testing the form.
+The live deployment must define the MongoDB variables plus the WhatsApp Cloud API
+variables in `.env.example`. `WHATSAPP_OTP_TEMPLATE_NAME` must point to an
+approved authentication template that accepts the code as its first body
+variable. For MongoDB Atlas, add the deployment's outbound network access to
+the Atlas IP access list. Check `/api/health` after deploying; it should return
+`{"ok":true,"database":"connected"}` before testing the form.
+
+For local development without sending real messages, set
+`WHATSAPP_OTP_MODE=console`. The generated code will be printed by the server
+and the rest of the verification flow remains enabled. Use `WHATSAPP_OTP_MODE=meta`
+with real Meta credentials for actual WhatsApp delivery.
 
 Build the frontend and start the Express server so the `/api/leads`,
 `/api/leaderboard`, and `/api/scores` routes are available in the deployed app:

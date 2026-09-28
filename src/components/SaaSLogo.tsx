@@ -12,7 +12,7 @@ const logoImageFilesByKey: Partial<Record<string, string[]>> = {
   ciphergate: ['cipher_gate.png'],
   fynovo: ['Fynlog.png'],
   devpulse: ['billzzy-logo.png'],
-  cloudsync: ['lite-logo.png'],
+  cloudsync: ['channelbot.png'],
   omnidata: ['f3-icon.png'],
   pulsecrm: ['go_whats.png'],
 };

@@ -62,9 +62,9 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
               key={prod.id}
               onClick={() => onProductPreviewClick(prod.id)}
               title={`${prod.name} - ${prod.tagline}`}
-              className="cursor-pointer rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-2.5 shadow-lg backdrop-blur-md transition-all hover:scale-110 hover:border-[#1b9e4b] sm:p-3"
+              className="flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-2.5 shadow-lg backdrop-blur-md transition-all hover:scale-110 hover:border-[#1b9e4b] sm:h-[72px] sm:w-[72px] sm:p-3"
             >
-              <SaaSLogo id={prod.id} size={36} glow={true} />
+              <SaaSLogo id={prod.id} size={50} glow={true} />
             </button>
           ))}
         </motion.div>
@@ -107,9 +107,9 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
       {/* Expo Footer Info */}
       <div className="relative z-10 flex w-full flex-col items-center justify-between gap-2 border-t border-[#d9e8df] pt-6 text-center text-[10px] font-bold uppercase tracking-widest text-black/60 sm:flex-row sm:text-left">
         <span>2026 Tech Expo Enterprise Systems</span>
-        <span>Match 3 icons to unlock instant product insights and QR demos</span><br />
-        <br />
-        <span>Powered by Techvaseegrah</span>
+<span className="text-xl font-medium tracking-[0.16em] text-black/80">
+  Powered by Techvaseegrah
+</span>
       </div>
     </div>
   );

@@ -4,6 +4,13 @@ import dns from 'node:dns';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
+import {
+  createMemoryOtpStore,
+  createMongoOtpStore,
+  OtpError,
+  sendOtp,
+  verifyOtp,
+} from './api/otp.ts';
 
 // Load local secrets first, then fall back to the standard .env file.
 // Both files are ignored by git; .env.example is documentation only.
@@ -36,6 +43,7 @@ const port = Number(process.env.PORT ?? 3000);
 const mongoUri = process.env.MONGODB_URI?.trim();
 const mongoDbName = process.env.MONGODB_DB_NAME ?? 'saas_crush';
 const mongoCollectionName = process.env.MONGODB_COLLECTION_NAME ?? 'expo_leads';
+const mongoOtpCollectionName = process.env.MONGODB_OTP_COLLECTION_NAME ?? 'expo_otp_challenges';
 
 const app = express();
 app.use(express.json({ limit: '20kb' }));
@@ -49,6 +57,7 @@ app.get('/favicon.ico', (_req, res) => {
 let mongoClient: MongoClient | null = null;
 // In-memory fallback is intentionally limited to local development.
 const inMemoryRecords: any[] = [];
+const inMemoryOtpStore = createMemoryOtpStore();
 
 async function getLeadsCollection() {
   if (!mongoUri) {
@@ -70,6 +79,16 @@ async function getLeadsCollection() {
   }
 
   return mongoClient.db(mongoDbName).collection(mongoCollectionName);
+}
+
+async function getOtpStore() {
+  if (!mongoUri) {
+    if (allowInMemoryFallback) return inMemoryOtpStore;
+    throw new OtpError('Database is not configured for WhatsApp OTP verification.', 503);
+  }
+
+  await getLeadsCollection();
+  return createMongoOtpStore(mongoClient!.db(mongoDbName).collection(mongoOtpCollectionName));
 }
 
 function cleanText(value: unknown) {
@@ -96,12 +115,30 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
+app.post('/api/otp/send', async (req, res) => {
+  const whatsappNumber = cleanText(req.body?.whatsappNumber);
+
+  try {
+    const result = await sendOtp(whatsappNumber, await getOtpStore());
+    return res.json(result);
+  } catch (error) {
+    if (error instanceof OtpError) {
+      return res.status(error.status).json({ message: error.message });
+    }
+
+    console.error('[otp] Failed to send WhatsApp OTP', error);
+    return res.status(500).json({ message: 'Could not send the WhatsApp OTP. Please try again.' });
+  }
+});
+
 app.post('/api/leads', async (req, res) => {
   const fullName = cleanText(req.body?.fullName);
   const whatsappNumber = cleanText(req.body?.whatsappNumber);
   const email = cleanText(req.body?.email).toLowerCase();
   const sourceProductId = Number(req.body?.sourceProductId);
   const sourceProductName = cleanText(req.body?.sourceProductName);
+  const otpChallengeId = cleanText(req.body?.otpChallengeId);
+  const whatsappOtp = cleanText(req.body?.whatsappOtp);
 
   if (fullName.length < 2 || fullName.length > 80) {
     return res.status(400).json({ message: 'Please enter a valid full name.' });
@@ -113,6 +150,21 @@ app.post('/api/leads', async (req, res) => {
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
     return res.status(400).json({ message: 'Please enter a valid email address.' });
+  }
+
+  if (!otpChallengeId || !/^\d{6}$/.test(whatsappOtp)) {
+    return res.status(400).json({ message: 'Please verify your WhatsApp number before playing.' });
+  }
+
+  try {
+    await verifyOtp(whatsappNumber, otpChallengeId, whatsappOtp, await getOtpStore());
+  } catch (error) {
+    if (error instanceof OtpError) {
+      return res.status(error.status).json({ message: error.message });
+    }
+
+    console.error('[otp] Failed to verify WhatsApp OTP', error);
+    return res.status(503).json({ message: 'Could not verify the WhatsApp OTP. Please try again.' });
   }
 
   try {

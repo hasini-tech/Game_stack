@@ -223,19 +223,7 @@ export default function App() {
         )}
       </main>
 
-      {/* Elegant Dark Footer */}
-      <footer className={`${isGameActive ? 'hidden sm:flex' : 'flex'} z-10 h-auto flex-col items-center justify-between gap-2 border-t border-[#d9e8df] bg-[#f5fff8] px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-black/60 sm:h-12 sm:flex-row sm:px-8 sm:py-0`}>
-        <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-4">
-          <span>Tech Expo SaaS Match-3</span>
-          <span className="hidden sm:inline">Enterprise Solutions Arena</span>
-        </div>
-        <div className="flex items-center justify-center gap-4 sm:justify-end">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-emerald-400">Live Connection</span>
-          </div>
-        </div>
-      </footer>
+
     </div>
   );
 }

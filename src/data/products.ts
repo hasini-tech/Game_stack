@@ -82,11 +82,11 @@ export const SAAS_PRODUCTS: SaaSProduct[] = [
   {
     id: 3,
     key: 'cloudsync',
-    name: 'Lite Billzzy',
-    tagline: 'Eco-Friendly Mobile Billing',
-    category: 'Point of Sale',
-    shortDesc: 'A fast, secure, and sustainable mobile-first billing solution for businesses of all sizes.',
-    fullDesc: 'Lite Billzzy streamlines point of sale with an eco-friendly, mobile-first billing solution that replaces paper with fast, secure, and sustainable workflows.',
+    name: 'ChannelBot',
+    tagline: 'YouTube Comment Automation',
+    category: 'YouTube Automation',
+    shortDesc: 'Automate YouTube comment workflows and keep channel engagement moving with consistent, timely replies.',
+    fullDesc: 'ChannelBot helps teams monitor, organize, and automate YouTube comment replies so every conversation gets a faster, more consistent response.',
     color: {
       bg: 'bg-sky-950/80',
       text: 'text-sky-400',
@@ -98,12 +98,12 @@ export const SAAS_PRODUCTS: SaaSProduct[] = [
       secondaryHex: '#2563eb',
     },
     features: [
-      'Mobile-First Point of Sale',
-      'Paperless Billing Workflows',
-      'Fast and Secure Transactions'
+      'Automated YouTube Comment Monitoring',
+      'Smart Reply Workflows',
+      'Faster Channel Engagement'
     ],
-    qrUrl: 'https://lite.billzzy.com/',
-    statsLabel: 'Fast, Paperless Checkout'
+    qrUrl: 'https://channelbot.in/',
+    statsLabel: 'Faster Comment Engagement'
   },
   {
     id: 4,
