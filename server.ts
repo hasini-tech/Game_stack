@@ -87,8 +87,14 @@ async function getOtpStore() {
     throw new OtpError('Database is not configured for WhatsApp OTP verification.', 503);
   }
 
-  await getLeadsCollection();
-  return createMongoOtpStore(mongoClient!.db(mongoDbName).collection(mongoOtpCollectionName));
+  try {
+    await getLeadsCollection();
+    return createMongoOtpStore(mongoClient!.db(mongoDbName).collection(mongoOtpCollectionName));
+  } catch (error) {
+    console.error('[database] OTP store unavailable', error);
+    if (allowInMemoryFallback) return inMemoryOtpStore;
+    throw error;
+  }
 }
 
 function cleanText(value: unknown) {
@@ -127,7 +133,7 @@ app.post('/api/otp/send', async (req, res) => {
     }
 
     console.error('[otp] Failed to send WhatsApp OTP', error);
-    return res.status(500).json({ message: 'Could not send the WhatsApp OTP. Please try again.' });
+    return res.status(503).json({ message: 'OTP service is temporarily unavailable. Please try again.' });
   }
 });
 

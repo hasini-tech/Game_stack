@@ -122,7 +122,7 @@ async function handleSendOtp(req: ApiRequest, res: ApiResponse) {
     }
 
     console.error('[otp] Vercel WhatsApp OTP send failed', error);
-    return res.status(500).json({ message: 'Could not send the WhatsApp OTP. Please try again.' });
+    return res.status(503).json({ message: 'OTP service is temporarily unavailable. Please try again.' });
   }
 }
 
