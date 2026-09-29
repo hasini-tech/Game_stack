@@ -3,14 +3,7 @@ import express from 'express';
 import dns from 'node:dns';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
-import {
-  createMemoryOtpStore,
-  createMongoOtpStore,
-  OtpError,
-  sendOtp,
-  verifyOtp,
-} from './api/otp.ts';
+import { MongoClient, ServerApiVersion } from 'mongodb';
 
 // Load local secrets first, then fall back to the standard .env file.
 // Both files are ignored by git; .env.example is documentation only.
@@ -43,7 +36,6 @@ const port = Number(process.env.PORT ?? 3000);
 const mongoUri = process.env.MONGODB_URI?.trim();
 const mongoDbName = process.env.MONGODB_DB_NAME ?? 'saas_crush';
 const mongoCollectionName = process.env.MONGODB_COLLECTION_NAME ?? 'expo_leads';
-const mongoOtpCollectionName = process.env.MONGODB_OTP_COLLECTION_NAME ?? 'expo_otp_challenges';
 
 const app = express();
 app.use(express.json({ limit: '20kb' }));
@@ -57,7 +49,6 @@ app.get('/favicon.ico', (_req, res) => {
 let mongoClient: MongoClient | null = null;
 // In-memory fallback is intentionally limited to local development.
 const inMemoryRecords: any[] = [];
-const inMemoryOtpStore = createMemoryOtpStore();
 
 async function getLeadsCollection() {
   if (!mongoUri) {
@@ -81,22 +72,6 @@ async function getLeadsCollection() {
   return mongoClient.db(mongoDbName).collection(mongoCollectionName);
 }
 
-async function getOtpStore() {
-  if (!mongoUri) {
-    if (allowInMemoryFallback) return inMemoryOtpStore;
-    throw new OtpError('Database is not configured for WhatsApp OTP verification.', 503);
-  }
-
-  try {
-    await getLeadsCollection();
-    return createMongoOtpStore(mongoClient!.db(mongoDbName).collection(mongoOtpCollectionName));
-  } catch (error) {
-    console.error('[database] OTP store unavailable', error);
-    if (allowInMemoryFallback) return inMemoryOtpStore;
-    throw error;
-  }
-}
-
 function cleanText(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
 }
@@ -118,101 +93,6 @@ app.get('/api/health', async (_req, res) => {
       ok: false,
       database: mongoUri ? 'unavailable' : 'not_configured',
     });
-  }
-});
-
-app.post('/api/otp/send', async (req, res) => {
-  const whatsappNumber = cleanText(req.body?.whatsappNumber);
-
-  try {
-    const result = await sendOtp(whatsappNumber, await getOtpStore());
-    return res.json(result);
-  } catch (error) {
-    if (error instanceof OtpError) {
-      return res.status(error.status).json({ message: error.message });
-    }
-
-    console.error('[otp] Failed to send WhatsApp OTP', error);
-    return res.status(503).json({ message: 'OTP service is temporarily unavailable. Please try again.' });
-  }
-});
-
-app.post('/api/leads', async (req, res) => {
-  const fullName = cleanText(req.body?.fullName);
-  const whatsappNumber = cleanText(req.body?.whatsappNumber);
-  const email = cleanText(req.body?.email).toLowerCase();
-  const sourceProductId = Number(req.body?.sourceProductId);
-  const sourceProductName = cleanText(req.body?.sourceProductName);
-  const otpChallengeId = cleanText(req.body?.otpChallengeId);
-  const whatsappOtp = cleanText(req.body?.whatsappOtp);
-
-  if (fullName.length < 2 || fullName.length > 80) {
-    return res.status(400).json({ message: 'Please enter a valid full name.' });
-  }
-
-  if (!/^\d{10}$/.test(whatsappNumber)) {
-    return res.status(400).json({ message: 'Please enter a valid 10-digit WhatsApp number.' });
-  }
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
-    return res.status(400).json({ message: 'Please enter a valid email address.' });
-  }
-
-  if (!otpChallengeId || !/^\d{6}$/.test(whatsappOtp)) {
-    return res.status(400).json({ message: 'Please verify your WhatsApp number before playing.' });
-  }
-
-  try {
-    await verifyOtp(whatsappNumber, otpChallengeId, whatsappOtp, await getOtpStore());
-  } catch (error) {
-    if (error instanceof OtpError) {
-      return res.status(error.status).json({ message: error.message });
-    }
-
-    console.error('[otp] Failed to verify WhatsApp OTP', error);
-    return res.status(503).json({ message: 'Could not verify the WhatsApp OTP. Please try again.' });
-  }
-
-  try {
-    try {
-      const collection = await getLeadsCollection();
-      const result = await collection.insertOne({
-        fullName,
-        whatsappNumber,
-        email,
-        score: 0,
-        sourceProductId: Number.isFinite(sourceProductId) ? sourceProductId : null,
-        sourceProductName,
-        createdAt: new Date(),
-        userAgent: req.get('user-agent') ?? '',
-      });
-
-      return res.status(201).json({ id: result.insertedId.toString(), fullName });
-    } catch (err) {
-      console.error('[database] Failed to save lead', err);
-      if (!allowInMemoryFallback) {
-        return res.status(503).json({ message: databaseErrorMessage() });
-      }
-
-      const id = String(Date.now()) + '-' + Math.floor(Math.random() * 10000);
-      inMemoryRecords.push({
-        _id: id,
-        fullName,
-        whatsappNumber,
-        email,
-        score: 0,
-        sourceProductId: Number.isFinite(sourceProductId) ? sourceProductId : null,
-        sourceProductName,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        userAgent: req.get('user-agent') ?? '',
-      });
-
-      return res.status(201).json({ id, fullName });
-    }
-  } catch (error) {
-    console.error('Failed to save lead', error);
-    return res.status(500).json({ message: 'Could not save your details. Please try again.' });
   }
 });
 
@@ -272,7 +152,6 @@ app.get('/api/leaderboard', async (_req, res) => {
 });
 
 app.post('/api/scores', async (req, res) => {
-  const leadId = cleanText(req.body?.leadId);
   const playerName = cleanText(req.body?.playerName);
   const score = Number(req.body?.score);
   const maxCombo = Number(req.body?.maxCombo);
@@ -299,21 +178,8 @@ app.post('/api/scores', async (req, res) => {
         updatedAt: new Date(),
       };
 
-      if (ObjectId.isValid(leadId)) {
-        const result = await collection.updateOne(
-          { _id: new ObjectId(leadId) },
-          { $set: scoreFields }
-        );
-
-        if (result.matchedCount > 0) {
-          return res.json({ id: leadId });
-        }
-      }
-
       const result = await collection.insertOne({
         ...scoreFields,
-        whatsappNumber: '',
-        email: '',
         createdAt: new Date(),
         userAgent: req.get('user-agent') ?? '',
       });
@@ -335,8 +201,6 @@ app.post('/api/scores', async (req, res) => {
         mode,
         createdAt: new Date(),
         updatedAt: new Date(),
-        whatsappNumber: '',
-        email: '',
         userAgent: req.get('user-agent') ?? '',
       });
 

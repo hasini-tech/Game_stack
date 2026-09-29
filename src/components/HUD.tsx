@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Pause, Play, Volume2, VolumeX, BookOpen, Trophy } from 'lucide-react';
 
 interface HUDProps {
+  playerName: string;
   score: number;
   highScore: number;
   timeRemaining: number;
@@ -18,6 +19,7 @@ interface HUDProps {
 }
 
 export const HUD: React.FC<HUDProps> = ({
+  playerName,
   score,
   highScore,
   timeRemaining,
@@ -39,8 +41,11 @@ export const HUD: React.FC<HUDProps> = ({
         {/* Left Stats: Score & Best */}
         <div className="col-span-2 grid min-w-0 grid-cols-2 gap-1.5 sm:flex sm:w-auto sm:items-center sm:gap-8">
           <div className="min-w-0 text-left">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-black/50 sm:text-[10px]">
-              Score
+            <p className="flex min-w-0 items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-black/50 sm:text-[10px]">
+              <span className="shrink-0">Score</span>
+              <span className="truncate text-black/70" title={playerName}>
+                {playerName}
+              </span>
             </p>
             <p className="truncate font-mono text-base font-bold text-black sm:text-2xl">
               {score.toLocaleString()}

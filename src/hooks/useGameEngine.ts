@@ -346,12 +346,11 @@ export function useGameEngine() {
     [resolveCascades, isSessionActive, setBusyState]
   );
 
-  const saveScoreToLeaderboard = async (playerName: string, leadId?: string | null) => {
+  const saveScoreToLeaderboard = async (playerName: string) => {
     const response = await fetch('/api/scores', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        leadId,
         playerName,
         score,
         maxCombo,

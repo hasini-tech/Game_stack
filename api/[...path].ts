@@ -1,11 +1,5 @@
 import dns from 'node:dns';
-import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb';
-import {
-  createMongoOtpStore,
-  OtpError,
-  sendOtp,
-  verifyOtp,
-} from './otp.ts';
+import { MongoClient, ServerApiVersion } from 'mongodb';
 
 type ApiRequest = {
   method?: string;
@@ -24,7 +18,6 @@ type RequestBody = Record<string, unknown>;
 const mongoUri = process.env.MONGODB_URI?.trim();
 const mongoDbName = process.env.MONGODB_DB_NAME ?? 'saas_crush';
 const mongoCollectionName = process.env.MONGODB_COLLECTION_NAME ?? 'expo_leads';
-const mongoOtpCollectionName = process.env.MONGODB_OTP_COLLECTION_NAME ?? 'expo_otp_challenges';
 
 const configuredDnsServers = process.env.MONGODB_DNS_SERVERS
   ?.split(',')
@@ -72,11 +65,6 @@ async function getLeadsCollection() {
   return client.db(mongoDbName).collection(mongoCollectionName);
 }
 
-async function getOtpStore() {
-  const client = await getMongoClient();
-  return createMongoOtpStore(client.db(mongoDbName).collection(mongoOtpCollectionName));
-}
-
 function cleanText(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
 }
@@ -107,80 +95,6 @@ function databaseErrorMessage() {
 function userAgent(req: ApiRequest) {
   const value = req.headers?.['user-agent'];
   return typeof value === 'string' ? value : '';
-}
-
-async function handleSendOtp(req: ApiRequest, res: ApiResponse) {
-  const body = requestBody(req);
-  const whatsappNumber = cleanText(body.whatsappNumber);
-
-  try {
-    const result = await sendOtp(whatsappNumber, await getOtpStore());
-    return res.json(result);
-  } catch (error) {
-    if (error instanceof OtpError) {
-      return res.status(error.status).json({ message: error.message });
-    }
-
-    console.error('[otp] Vercel WhatsApp OTP send failed', error);
-    return res.status(503).json({ message: 'OTP service is temporarily unavailable. Please try again.' });
-  }
-}
-
-async function handleLead(req: ApiRequest, res: ApiResponse) {
-  const body = requestBody(req);
-  const fullName = cleanText(body.fullName);
-  const whatsappNumber = cleanText(body.whatsappNumber);
-  const email = cleanText(body.email).toLowerCase();
-  const sourceProductId = Number(body.sourceProductId);
-  const sourceProductName = cleanText(body.sourceProductName);
-  const otpChallengeId = cleanText(body.otpChallengeId);
-  const whatsappOtp = cleanText(body.whatsappOtp);
-
-  if (fullName.length < 2 || fullName.length > 80) {
-    return res.status(400).json({ message: 'Please enter a valid full name.' });
-  }
-
-  if (!/^\d{10}$/.test(whatsappNumber)) {
-    return res.status(400).json({ message: 'Please enter a valid 10-digit WhatsApp number.' });
-  }
-
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) {
-    return res.status(400).json({ message: 'Please enter a valid email address.' });
-  }
-
-  if (!otpChallengeId || !/^\d{6}$/.test(whatsappOtp)) {
-    return res.status(400).json({ message: 'Please verify your WhatsApp number before playing.' });
-  }
-
-  try {
-    await verifyOtp(whatsappNumber, otpChallengeId, whatsappOtp, await getOtpStore());
-  } catch (error) {
-    if (error instanceof OtpError) {
-      return res.status(error.status).json({ message: error.message });
-    }
-
-    console.error('[otp] Vercel WhatsApp OTP verification failed', error);
-    return res.status(503).json({ message: 'Could not verify the WhatsApp OTP. Please try again.' });
-  }
-
-  try {
-    const collection = await getLeadsCollection();
-    const result = await collection.insertOne({
-      fullName,
-      whatsappNumber,
-      email,
-      score: 0,
-      sourceProductId: Number.isFinite(sourceProductId) ? sourceProductId : null,
-      sourceProductName,
-      createdAt: new Date(),
-      userAgent: userAgent(req),
-    });
-
-    return res.status(201).json({ id: result.insertedId.toString(), fullName });
-  } catch (error) {
-    console.error('[database] Vercel lead save failed', error);
-    return res.status(503).json({ message: databaseErrorMessage() });
-  }
 }
 
 async function handleLeaderboard(res: ApiResponse) {
@@ -220,7 +134,6 @@ async function handleLeaderboard(res: ApiResponse) {
 
 async function handleScore(req: ApiRequest, res: ApiResponse) {
   const body = requestBody(req);
-  const leadId = cleanText(body.leadId);
   const playerName = cleanText(body.playerName);
   const score = Number(body.score);
   const maxCombo = Number(body.maxCombo);
@@ -246,21 +159,8 @@ async function handleScore(req: ApiRequest, res: ApiResponse) {
       updatedAt: new Date(),
     };
 
-    if (ObjectId.isValid(leadId)) {
-      const result = await collection.updateOne(
-        { _id: new ObjectId(leadId) },
-        { $set: scoreFields }
-      );
-
-      if (result.matchedCount > 0) {
-        return res.json({ id: leadId });
-      }
-    }
-
     const result = await collection.insertOne({
       ...scoreFields,
-      whatsappNumber: '',
-      email: '',
       createdAt: new Date(),
       userAgent: userAgent(req),
     });
@@ -292,14 +192,6 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
   if (pathname === '/api/health' && method === 'GET') {
     return handleHealth(res);
-  }
-
-  if (pathname === '/api/otp/send' && method === 'POST') {
-    return handleSendOtp(req, res);
-  }
-
-  if (pathname === '/api/leads' && method === 'POST') {
-    return handleLead(req, res);
   }
 
   if (pathname === '/api/leaderboard' && method === 'GET') {

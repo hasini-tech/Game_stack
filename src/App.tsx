@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { Navbar } from './components/Navbar';
 import { LandingScreen } from './components/LandingScreen';
@@ -8,7 +8,6 @@ import { ProductPopup } from './components/ProductPopup';
 import { ProductCodexModal } from './components/ProductCodex';
 import { GameOverModal } from './components/GameOverModal';
 import { LeaderboardModal } from './components/LeaderboardModal';
-import { LeadCaptureModal } from './components/LeadCaptureModal';
 import { GameMode, SaaSProductId } from './types/game';
 import { Play, RotateCcw, BookOpen } from 'lucide-react';
 
@@ -43,9 +42,21 @@ export default function App() {
   const [showCodex, setShowCodex] = useState<boolean>(false);
   const [codexInitialId, setCodexInitialId] = useState<SaaSProductId>(0);
   const [showLeaderboard, setShowLeaderboard] = useState<boolean>(false);
-  const [leadProductId, setLeadProductId] = useState<SaaSProductId | null>(null);
-  const [pendingGameMode, setPendingGameMode] = useState<GameMode>('timed');
-  const [currentLead, setCurrentLead] = useState<{ id: string; fullName: string } | null>(null);
+  const [playerName, setPlayerName] = useState<string>(() => {
+    try {
+      return window.localStorage.getItem('tech-expo-player-name') ?? 'Guest Player';
+    } catch {
+      return 'Guest Player';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('tech-expo-player-name', playerName);
+    } catch {
+      // Keep the current name for this session when storage is unavailable.
+    }
+  }, [playerName]);
 
   const openCodexWithProduct = useCallback((id: SaaSProductId = 0) => {
     setCodexInitialId(id);
@@ -56,26 +67,19 @@ export default function App() {
     setEducationalProductId(null);
   }, [setEducationalProductId]);
 
+  const requestGameStart = useCallback((chosenMode: GameMode) => {
+    if (!playerName.trim()) return;
+    startGame(chosenMode);
+  }, [playerName, startGame]);
+
   const handleProductPreviewClick = useCallback((id: SaaSProductId) => {
     if (id === 2) {
-      setPendingGameMode('timed');
-      setLeadProductId(id);
+      requestGameStart('timed');
       return;
     }
 
     openCodexWithProduct(id);
-  }, [openCodexWithProduct]);
-
-  const requestGameStart = useCallback((chosenMode: GameMode) => {
-    setPendingGameMode(chosenMode);
-    setLeadProductId(2);
-  }, []);
-
-  const handleLeadSaved = useCallback((lead: { id: string; fullName: string }) => {
-    setCurrentLead(lead);
-    setLeadProductId(null);
-    startGame(pendingGameMode);
-  }, [pendingGameMode, startGame]);
+  }, [openCodexWithProduct, requestGameStart]);
 
   const isGameActive = status === 'playing' || status === 'paused';
 
@@ -101,6 +105,8 @@ export default function App() {
         {status === 'landing' && (
           <LandingScreen
             highScore={highScore}
+            playerName={playerName}
+            onPlayerNameChange={setPlayerName}
             onStartGame={requestGameStart}
             onProductPreviewClick={handleProductPreviewClick}
             onOpenCodex={() => openCodexWithProduct(0)}
@@ -112,6 +118,7 @@ export default function App() {
           <div className="relative mx-auto flex w-full max-w-4xl min-w-0 flex-1 flex-col items-center justify-center gap-2 py-2 sm:gap-3 sm:py-2">
             {/* Top HUD */}
             <HUD
+              playerName={playerName}
               score={score}
               highScore={highScore}
               timeRemaining={timeRemaining}
@@ -196,8 +203,8 @@ export default function App() {
             mode={mode}
             onOpenCodex={() => openCodexWithProduct(0)}
             onOpenLeaderboard={() => setShowLeaderboard(true)}
-            onSaveScore={(name) => saveScoreToLeaderboard(name, currentLead?.id)}
-            initialPlayerName={currentLead?.fullName ?? ''}
+            onSaveScore={saveScoreToLeaderboard}
+            initialPlayerName={playerName}
           />
         )}
 
@@ -214,13 +221,6 @@ export default function App() {
           <LeaderboardModal onClose={() => setShowLeaderboard(false)} />
         )}
 
-        {leadProductId !== null && (
-          <LeadCaptureModal
-            productId={leadProductId}
-            onClose={() => setLeadProductId(null)}
-            onSaved={handleLeadSaved}
-          />
-        )}
       </main>
 
 
