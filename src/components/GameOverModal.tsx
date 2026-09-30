@@ -92,13 +92,13 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   useEffect(() => {
     if (hasSaveAttemptedRef.current) return;
 
-    // Always attempt to save the score when modal mounts. If we don't have
-    // a captured lead name, use a short guest fallback so the backend will
-    // accept and persist the score (server requires a non-empty playerName).
-    const fallbackName = `Guest Player`;
-    const playerName = initialPlayerName.trim() || fallbackName;
-
     hasSaveAttemptedRef.current = true;
+    const playerName = initialPlayerName.trim();
+    if (!playerName) {
+      setSaveError('Enter a player name before starting the game.');
+      return;
+    }
+
     setIsSaving(true);
     setSaveError(null);
 

@@ -230,11 +230,39 @@ if (isProduction) {
   app.use(vite.middlewares);
 }
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`SaaS Crush running at http://localhost:${port}`);
-});
+const maxPortAttempts = 10;
+
+function listenOnPort(portToTry: number) {
+  return new Promise<ReturnType<typeof app.listen>>((resolve, reject) => {
+    const server = app.listen(portToTry, '::');
+
+    server.once('listening', () => resolve(server));
+    server.once('error', (error: NodeJS.ErrnoException) => {
+      server.close();
+      reject(error);
+    });
+  });
+}
+
+let httpServer: ReturnType<typeof app.listen> | null = null;
+let activePort = port;
+
+for (let attempt = 0; attempt < maxPortAttempts; attempt += 1) {
+  try {
+    activePort = port + attempt;
+    httpServer = await listenOnPort(activePort);
+    break;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'EADDRINUSE' || attempt === maxPortAttempts - 1) {
+      throw error;
+    }
+  }
+}
+
+console.log(`SaaS Crush running at http://localhost:${activePort}`);
 
 process.on('SIGINT', async () => {
+  httpServer?.close();
   await mongoClient?.close();
   process.exit(0);
 });

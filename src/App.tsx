@@ -44,9 +44,10 @@ export default function App() {
   const [showLeaderboard, setShowLeaderboard] = useState<boolean>(false);
   const [playerName, setPlayerName] = useState<string>(() => {
     try {
-      return window.localStorage.getItem('tech-expo-player-name') ?? 'Guest Player';
+      const storedName = window.localStorage.getItem('tech-expo-player-name');
+      return storedName === 'Guest Player' ? '' : storedName ?? '';
     } catch {
-      return 'Guest Player';
+      return '';
     }
   });
 
