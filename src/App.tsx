@@ -102,7 +102,7 @@ export default function App() {
       />
 
       {/* Main Content View Switcher */}
-      <main className={`relative flex min-h-0 w-full flex-1 flex-col items-center justify-start ${isGameActive ? 'overflow-x-hidden overflow-y-auto px-2 pb-4 pt-2 sm:p-4' : 'overflow-y-auto p-2 sm:p-4'}`}>
+      <main className={`relative flex min-h-0 w-full flex-1 flex-col items-center justify-start ${isGameActive ? 'overflow-x-hidden overflow-y-auto px-4 pb-6 pt-0 sm:p-4' : 'overflow-y-auto p-2 sm:p-4'}`}>
         {status === 'landing' && (
           <LandingScreen
             highScore={highScore}
@@ -116,7 +116,7 @@ export default function App() {
         )}
 
         {(status === 'playing' || status === 'paused') && (
-          <div className="relative mx-auto flex w-full max-w-4xl min-w-0 flex-1 flex-col items-center justify-center gap-2 py-2 sm:gap-3 sm:py-2">
+          <div className="relative mx-auto flex w-full min-w-0 max-w-4xl flex-1 flex-col items-center justify-start gap-2 py-1 sm:justify-center sm:gap-3 sm:py-2">
             {/* Top HUD */}
             <HUD
               playerName={playerName}

@@ -36,8 +36,53 @@ export const HUD: React.FC<HUDProps> = ({
   const isTimeWarning = !isZenMode && timeRemaining <= 10 && timeRemaining > 0;
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-0 py-0 sm:px-4 sm:py-2">
-      <div className="grid grid-cols-4 items-center gap-1.5 rounded-xl border border-[#d9e8df] bg-[#f5fff8] p-2 shadow-lg backdrop-blur-xl sm:flex sm:gap-3 sm:rounded-2xl sm:p-4 lg:justify-between">
+    <div className="mx-auto w-full max-w-4xl px-1 py-0 sm:px-4 sm:py-2">
+      <div className="sm:hidden">
+        <div className="-mt-px grid min-h-[52px] grid-cols-3 items-center rounded-b-[28px] border border-t-0 border-[#d9e8df] bg-[#f5fff8] px-3 py-2 shadow-lg">
+          <div className="min-w-0 border-r border-[#d9e8df] pr-2">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-black/50">Score</p>
+            <p className="truncate font-mono text-xl font-bold text-[#087a37]">{score.toLocaleString()}</p>
+          </div>
+          <div className="min-w-0 border-r border-[#d9e8df] px-3 text-center">
+            <p className="flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-widest text-black/50">
+              <Trophy className="h-3.5 w-3.5 text-amber-400" /> Best
+            </p>
+            <p className="truncate font-mono text-lg font-bold text-black">{highScore.toLocaleString()}</p>
+          </div>
+          <div className="min-w-0 pl-2 text-right">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-black/50">Time</p>
+            <p className={`font-mono text-xl font-bold ${isTimeWarning ? 'animate-pulse text-rose-600' : 'text-black'}`}>
+              {isZenMode ? '--:--' : `00:${timeRemaining < 10 ? `0${timeRemaining}` : timeRemaining}`}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-3 grid grid-cols-3 gap-2 rounded-[24px] border border-[#d9e8df] bg-[#f5fff8] p-2 shadow-lg">
+          <button
+            onClick={onOpenLeaderboard}
+            title="Leaderboard"
+            className="flex min-h-10 items-center justify-center rounded-2xl border border-[#d9e8df] bg-[#f5fff8] text-black shadow-sm transition-colors hover:bg-[#e6f8e6]"
+          >
+            <Trophy className="h-5 w-5" />
+          </button>
+          <button
+            onClick={onToggleMute}
+            title={isMuted ? 'Unmute' : 'Mute'}
+            className="flex min-h-10 items-center justify-center rounded-2xl border border-[#d9e8df] bg-[#f5fff8] text-black shadow-sm transition-colors hover:bg-[#e6f8e6]"
+          >
+            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+          </button>
+          <button
+            onClick={onTogglePause}
+            className="flex min-h-10 items-center justify-center gap-1 rounded-2xl bg-[#1b9e4b] px-1 text-xs font-bold uppercase tracking-widest text-black shadow-lg transition-colors hover:bg-[#17903f]"
+          >
+            {isPaused ? <Play className="h-4 w-4 fill-black" /> : <Pause className="h-4 w-4" />}
+            <span>{isPaused ? 'Play' : 'Pause'}</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="hidden sm:flex sm:items-center sm:gap-3 sm:rounded-2xl sm:border sm:border-[#d9e8df] sm:bg-[#f5fff8] sm:p-4 sm:shadow-lg sm:backdrop-blur-xl lg:justify-between">
         {/* Left Stats: Score & Best */}
         <div className="col-span-2 grid min-w-0 grid-cols-2 gap-1.5 sm:flex sm:w-auto sm:items-center sm:gap-8">
           <div className="min-w-0 text-left">

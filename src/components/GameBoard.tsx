@@ -44,32 +44,40 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     pointerId: number;
   } | null>(null);
 
-  // ResizeObserver / Window Resize to calculate exact tile and board pixel dimensions
+  // Keep the entire board inside the visible game area at every viewport size.
   useEffect(() => {
     const updateSize = () => {
-      const containerWidth = containerRef.current ? containerRef.current.clientWidth : window.innerWidth;
+      const containerWidth = containerRef.current?.clientWidth ?? window.innerWidth;
       const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-      const screenWidth = Math.max(0, Math.min(containerWidth, window.innerWidth - 24));
+      const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
       const isCompact = window.innerWidth < 640;
 
-      const innerPadding = isCompact ? 12 : 16;
-      const gapPx = isCompact ? 2 : 3;
-      const totalGaps = (BOARD_SIZE - 1) * gapPx;
-      const reservedVerticalSpace = isCompact ? 166 : 248;
-      const heightLimitedContent = Math.max(248, viewportHeight - reservedVerticalSpace - innerPadding);
-
-      const minTileSize = window.innerWidth < 340 ? 24 : window.innerWidth < 480 ? 28 : 36;
-      const minimumBoardContent = minTileSize * BOARD_SIZE + totalGaps;
-      const maxAllowedContent = isCompact
-        ? Math.max(minimumBoardContent, Math.min(screenWidth - innerPadding, 390))
-        : Math.max(minimumBoardContent, Math.min(screenWidth - innerPadding, heightLimitedContent, 520));
-      const computedTileSize = Math.max(
-        minTileSize,
-        Math.floor((maxAllowedContent - totalGaps) / BOARD_SIZE)
+      const reservedVerticalSpace = isCompact ? 138 : 248;
+      const availableBoardWidth = Math.max(
+        0,
+        Math.min(containerWidth, viewportWidth) - (isCompact ? 0 : 8)
+      );
+      const availableBoardHeight = Math.max(0, viewportHeight - reservedVerticalSpace);
+      const maximumBoardWidth = isCompact
+        ? Math.min(availableBoardWidth, availableBoardHeight, 390)
+        : Math.min(availableBoardWidth, availableBoardHeight, 520);
+      const compactGapPx = isCompact ? 2 : 3;
+      const compactPaddingPx = isCompact ? 12 : 16;
+      const compactTileSize = Math.floor(
+        (maximumBoardWidth - compactPaddingPx - (BOARD_SIZE - 1) * compactGapPx) / BOARD_SIZE
+      );
+      const usesSpaciousGrid = compactTileSize >= 34;
+      const gapPx = usesSpaciousGrid ? 3 : 2;
+      const boardPadding = usesSpaciousGrid ? 16 : 12;
+      const computedTileSize = Math.floor(
+        (maximumBoardWidth - boardPadding - (BOARD_SIZE - 1) * gapPx) / BOARD_SIZE
       );
 
-      const computedBoardWidth = computedTileSize * BOARD_SIZE + totalGaps + innerPadding;
-      setTileSizePx(computedTileSize);
+      // A positive fallback keeps the first render stable when the observer has no size yet.
+      const tileSize = Math.max(1, computedTileSize);
+
+      const computedBoardWidth = tileSize * BOARD_SIZE + (BOARD_SIZE - 1) * gapPx + boardPadding;
+      setTileSizePx(tileSize);
       setBoardWidthPx(computedBoardWidth);
     };
 
@@ -304,7 +312,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative flex w-full max-w-lg flex-col items-center justify-center mx-auto select-none touch-none"
+      className="relative mx-auto flex w-full min-w-0 max-w-lg flex-col items-center justify-center select-none touch-none"
     >
       {/* Motivational Toast Banner */}
       <AnimatePresence>
@@ -322,7 +330,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
       {/* Main Glass Game Board Canvas Container */}
       <div
-        className="relative rounded-2xl bg-[#f5fff8] p-2 shadow-xl border border-[#d9e8df] backdrop-blur-md overflow-hidden touch-none sm:rounded-3xl sm:shadow-2xl"
+        className="relative max-w-full overflow-hidden rounded-2xl border border-[#d9e8df] bg-[#f5fff8] p-2 shadow-xl backdrop-blur-md touch-none sm:rounded-3xl sm:shadow-2xl"
         style={{
           width: boardWidthPx,
           height: boardWidthPx,

@@ -4,6 +4,7 @@ import { Play, Sparkles, Trophy, BookOpen, UserRound } from 'lucide-react';
 import { GameMode } from '../types/game';
 import { SAAS_PRODUCTS } from '../data/products';
 import { SaaSLogo } from './SaaSLogo';
+import techLogo from '../../assets/image/tech-logo.png';
 
 interface LandingScreenProps {
   highScore: number;
@@ -34,7 +35,6 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center gap-2 rounded-full border border-[#d9e8df] bg-[#f5fff8] px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-black backdrop-blur-md sm:text-xs"
         >
-          <Sparkles className="h-4 w-4 animate-pulse text-black" />
           <span>TECH EXPO 2026 OFFICIAL SHOWCASE</span>
         </motion.div>
 
@@ -128,9 +128,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
       {/* Expo Footer Info */}
       <div className="relative z-10 flex w-full flex-col items-center justify-between gap-2 border-t border-[#d9e8df] pt-6 text-center text-[10px] font-bold uppercase tracking-widest text-black/60 sm:flex-row sm:text-left">
         <span>2026 Tech Expo Enterprise Systems</span>
-<span className="text-xl font-medium tracking-[0.16em] text-black/80">
-  Powered by Techvaseegrah
-</span>
+        <img src={techLogo} alt="Powered by Tech Vaseegrah" className="h-8 w-auto object-contain" />
       </div>
     </div>
   );

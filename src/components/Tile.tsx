@@ -18,7 +18,7 @@ export const TileComponent: React.FC<TileProps> = ({
   sizePx,
 }) => {
   const product = getProductById(tile.productId);
-  const iconSize = Math.min(Math.max(24, sizePx * 0.88), sizePx - 6);
+  const iconSize = Math.max(8, Math.min(Math.max(14, sizePx * 0.88), sizePx - 6));
 
   return (
     <motion.div

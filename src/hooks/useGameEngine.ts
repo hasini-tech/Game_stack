@@ -288,7 +288,7 @@ export function useGameEngine() {
       }, 1200);
 
       // Keep cascades quick so mobile play feels responsive.
-      await new Promise((res) => setTimeout(res, 240));
+      await new Promise((res) => setTimeout(res, 150));
       if (!isSessionActive(sessionId)) return;
 
       // Apply Gravity and Refill
@@ -300,7 +300,7 @@ export function useGameEngine() {
       setBoard(newBoard);
       setMatchedTileIds(new Set());
 
-      await new Promise((res) => setTimeout(res, 220));
+      await new Promise((res) => setTimeout(res, 120));
       if (!isSessionActive(sessionId)) return;
 
       // Continue cascade
@@ -333,7 +333,7 @@ export function useGameEngine() {
       if (initialMatches.matchedTileIds.size === 0) {
         // Invalid swap - bounce back after delay
         audioEngine.playInvalid();
-        await new Promise((res) => setTimeout(res, 180));
+        await new Promise((res) => setTimeout(res, 120));
         if (!isSessionActive(sessionId)) return;
         boardRef.current = originalBoard;
         setBoard(originalBoard); // Revert

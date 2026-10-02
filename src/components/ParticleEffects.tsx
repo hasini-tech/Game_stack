@@ -26,18 +26,18 @@ export const ParticleEffectsCanvas: React.FC<ParticleEffectsProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const activeParticlesRef = useRef<Particle[]>([]);
 
-  // Update particles ref whenever new particles arrive
   useEffect(() => {
     if (particles.length > 0) {
       activeParticlesRef.current.push(...particles);
     }
-  }, [particles]);
-
-  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    if (activeParticlesRef.current.length === 0) {
+      ctx.clearRect(0, 0, width, height);
+      return;
+    }
 
     let animId: number;
 
@@ -65,7 +65,9 @@ export const ParticleEffectsCanvas: React.FC<ParticleEffectsProps> = ({
       }
 
       activeParticlesRef.current = remaining;
-      animId = requestAnimationFrame(render);
+      if (remaining.length > 0) {
+        animId = requestAnimationFrame(render);
+      }
     };
 
     animId = requestAnimationFrame(render);
@@ -73,7 +75,7 @@ export const ParticleEffectsCanvas: React.FC<ParticleEffectsProps> = ({
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, [width, height]);
+  }, [particles, width, height]);
 
   return (
     <canvas
